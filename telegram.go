@@ -138,29 +138,34 @@ func (b *TelegramBot) handleCommand(chatId int64, userId int64, command, usernam
 	switch {
 	case strings.HasPrefix(command, "/start"):
 		err = b.registerUser(chatId, userId, username, fisrtname, lastname)
-	case strings.HasPrefix(command, "/viewtickers"):
-		err = b.viewTickers(chatId, userId)
-	case strings.HasPrefix(command, "/menu"):
-		err = b.sendMainMenu(chatId)
-	case strings.HasPrefix(command, "/addalert"):
-		err = b.addAlert(chatId, userId, command)
-	case strings.HasPrefix(command, "/viewalerts"):
-		err = b.viewAlerts(chatId, userId)
-	case strings.HasPrefix(command, "/updatealert"):
-		err = b.updateAlert(chatId, userId, command)
-	case strings.HasPrefix(command, "/deletealert"):
-		err = b.deleteAlert(chatId, userId, command)
 	case strings.HasPrefix(command, "/viewuser"):
 		err = b.viewUser(chatId, userId)
 	case strings.HasPrefix(command, "/deleteuser"):
 		err = b.deleteUser(chatId, userId)
+	case strings.HasPrefix(command, "/createalert"):
+		err = b.createAlert(chatId, userId, command)
+	case strings.HasPrefix(command, "/viewalerts"):
+		err = b.viewAlerts(chatId, userId, command)
+	case strings.HasPrefix(command, "/updatealert"):
+		err = b.updateAlert(chatId, userId, command)
+	case strings.HasPrefix(command, "/deletealert"):
+		err = b.deleteAlert(chatId, userId, command)
+	case strings.HasPrefix(command, "/viewsymbols"):
+		err = b.viewSymbols(chatId, userId)
+	default:
+		// Handle unknown commands or provide instructions
+		msg := tgbotapi.NewMessage(chatId, "Unknown command. Available commands: /start, /createalert, /updatealert, /deletealert, /viewalerts, /viewsymbols")
+		_, err := b.bot.Send(msg)
+		if err != nil {
+			log.Println("Error sending message:", err)
+		}
 	}
 
 	return err
 }
 
 // crud on user
-func (b *TelegramBot) registerUser(chatId int64, userId int64, username, fisrtname, lastname string) error {
+func (b *TelegramBot) registerUser(chatId, userId int64, username, fisrtname, lastname string) error {
 	user, err := b.store.GetUserByUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -188,7 +193,7 @@ func (b *TelegramBot) registerUser(chatId int64, userId int64, username, fisrtna
 	_, err = b.bot.Send(msg)
 	return err
 }
-func (b *TelegramBot) viewUser(chatId int64, userId int64) error {
+func (b *TelegramBot) viewUser(chatId, userId int64) error {
 	user, err := b.store.GetUserByUserId(userId)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -207,7 +212,7 @@ func (b *TelegramBot) viewUser(chatId int64, userId int64) error {
 	_, err = b.bot.Send(msg)
 	return err
 }
-func (b *TelegramBot) deleteUser(chatId int64, userId int64) error {
+func (b *TelegramBot) deleteUser(chatId, userId int64) error {
 	user, err := b.store.GetUserByUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -229,7 +234,7 @@ func (b *TelegramBot) deleteUser(chatId int64, userId int64) error {
 }
 
 // crud alert
-func (b *TelegramBot) addAlert(chatId int64, userId int64, command string) error {
+func (b *TelegramBot) createAlert(chatId, userId int64, command string) error {
 	user, err := b.store.GetUserByUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -242,8 +247,8 @@ func (b *TelegramBot) addAlert(chatId int64, userId int64, command string) error
 	// Extract alert details from the command
 	parts := strings.SplitN(command, " ", 4)
 	println(len(parts))
-	if len(parts) < 4 {
-		msg := tgbotapi.NewMessage(chatId, "Usage: /addalert <ticker> <traget_price> <description>")
+	if len(parts) < 3 {
+		msg := tgbotapi.NewMessage(chatId, "Usage: /createalert <ticker> <traget_price> <description>")
 		_, err := b.bot.Send(msg)
 		return err
 	}
@@ -262,7 +267,18 @@ func (b *TelegramBot) addAlert(chatId int64, userId int64, command string) error
 		return err
 	}
 
-	description := parts[3]
+	// check if target_price is not in the range of daily (High and Low)
+	if targetPrice < t.DailyHigh && targetPrice > t.DailyLow {
+		msg := tgbotapi.NewMessage(chatId, "Invalid target price.\ntarget_price already in range of daily hight and low.")
+		_, err = b.bot.Send(msg)
+		return err
+	}
+	var description string
+	if len(parts) == 4 {
+		description = parts[3]
+	} else {
+		description = ""
+	}
 	newAlert := NewAlert(userId, t.Symbol, description, targetPrice, t.LivePrice)
 	if err := b.store.CreateAlert(newAlert); err != nil {
 		msg := tgbotapi.NewMessage(chatId, "Error storing the alert.")
@@ -274,7 +290,7 @@ func (b *TelegramBot) addAlert(chatId int64, userId int64, command string) error
 	_, err = b.bot.Send(msg)
 	return err
 }
-func (b *TelegramBot) viewAlerts(chatId int64, userId int64) error {
+func (b *TelegramBot) viewAlerts(chatId, userId int64, command string) error {
 	user, err := b.store.GetUserByUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -284,16 +300,39 @@ func (b *TelegramBot) viewAlerts(chatId int64, userId int64) error {
 		_, err := b.bot.Send(msg)
 		return err
 	}
-	alerts, err := b.store.GetAlertsByUserId(userId)
-	if err != nil {
+	var alerts []Alert
+	parts := strings.SplitN(command, " ", 2)
+	if len(parts) == 1 {
+		// view all alerts
+		alerts, err = b.store.GetAlertsByUserId(userId)
+		log.Println(len(alerts))
+		if err != nil {
+			return err
+		}
+	} else if len(parts) == 2 {
+		// view alerts with symbol
+		symbol := parts[1]
+		alerts, err = b.store.GetAlertsByUserIdAndSymbol(userId, symbol)
+		if err != nil {
+			return err
+		}
+	} else {
+		msg := tgbotapi.NewMessage(chatId, "Usage: /viewalerts <symbol(optional)>")
+		_, err := b.bot.Send(msg)
 		return err
 	}
 
 	var alertStrings []string
+	var livePrice float64
 	for _, alert := range alerts {
-		t, _ := tickers[alert.Symbol]
-		alertStrings = append(alertStrings, fmt.Sprintf("ID: %s\nSymbol: %s\nFrom: %.8f ==> %.8f\nCurr: %.8f\nActive: %t, \nCreated At: %s",
-			alert.Id, alert.Symbol, alert.StartPrice, alert.TargetPrice, t.LivePrice, alert.Active, alert.CreatedAt))
+		t, exist := tickers[alert.Symbol]
+		if exist {
+			livePrice = t.LivePrice
+		} else {
+			livePrice = 0
+		}
+
+		alertStrings = append(alertStrings, alert.ToString(livePrice))
 	}
 
 	if len(alertStrings) == 0 {
@@ -306,7 +345,7 @@ func (b *TelegramBot) viewAlerts(chatId int64, userId int64) error {
 	_, err = b.bot.Send(msg)
 	return err
 }
-func (b *TelegramBot) updateAlert(chatId int64, userId int64, command string) error {
+func (b *TelegramBot) updateAlert(chatId, userId int64, command string) error {
 	user, err := b.store.GetUserByUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -317,49 +356,49 @@ func (b *TelegramBot) updateAlert(chatId int64, userId int64, command string) er
 		return err
 	}
 	// Extract alert details from the command
-	parts := strings.SplitN(command, " ", 4)
+	parts := strings.SplitN(command, " ", 3)
 	if len(parts) < 3 {
-		msg := tgbotapi.NewMessage(chatId, "Usage: /updatealert <id> <target_price>")
+		msg := tgbotapi.NewMessage(chatId, "Usage: /updatealert <number> <target_price>")
 		_, err := b.bot.Send(msg)
 		return err
 	}
 
-	id := parts[1]
-	alerts, err := b.store.GetAlertsByUserId(userId)
-	isUserHasPermision := ContainsAlert(alerts, id)
-	if !isUserHasPermision {
-		msg := tgbotapi.NewMessage(chatId, "The alert not found")
+	number, err := strconv.ParseInt(parts[1], 10, 32)
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Invalid alert number.")
+		_, err = b.bot.Send(msg)
+		return err
+	}
+	alert, err := b.store.GetAlertByNumber(userId, int32(number))
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Alert not found.")
 		_, err := b.bot.Send(msg)
 		return err
 	}
 
-	alert, err := b.store.GetAlert(id)
+	targetPrice, err := strconv.ParseFloat(parts[2], 64)
 	if err != nil {
-		msg := tgbotapi.NewMessage(chatId, "The alert not found")
-		_, err := b.bot.Send(msg)
+		msg := tgbotapi.NewMessage(chatId, "Invalid target price.")
+		_, err = b.bot.Send(msg)
 		return err
 	}
-	targetPrice, err := strconv.ParseFloat(parts[3], 64)
-	if err != nil {
-		return err
-	}
-	t, exists := tickers[alert.Symbol]
+	ticker, exists := tickers[alert.Symbol]
 	if !exists {
 		msg := tgbotapi.NewMessage(chatId, "Live price not available for editing alert")
 		_, err := b.bot.Send(msg)
 		return err
 	}
-	alert.StartPrice = t.LivePrice
+
+	alert.StartPrice = ticker.LivePrice
 	alert.TargetPrice = targetPrice
 	if err := b.store.UpdateAlert(alert); err != nil {
 		return err
 	}
-
 	msg := tgbotapi.NewMessage(chatId, "Alert updated successfully.")
 	_, err = b.bot.Send(msg)
 	return err
 }
-func (b *TelegramBot) deleteAlert(chatId int64, userId int64, command string) error {
+func (b *TelegramBot) deleteAlert(chatId, userId int64, command string) error {
 	user, err := b.store.GetUserByUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -369,29 +408,28 @@ func (b *TelegramBot) deleteAlert(chatId int64, userId int64, command string) er
 		_, err := b.bot.Send(msg)
 		return err
 	}
-	// Extract alert id from the command
 	parts := strings.SplitN(command, " ", 2)
 	if len(parts) < 2 {
-		msg := tgbotapi.NewMessage(chatId, "Usage: /deletealert <id>")
+		msg := tgbotapi.NewMessage(chatId, "Usage: /deletealert <number>")
 		_, err := b.bot.Send(msg)
 		return err
 	}
-	id := parts[1]
 
-	// Get user alerts
-	alerts, err := b.store.GetAlertsByUserId(userId)
+	number, err := strconv.ParseInt(parts[1], 10, 32)
 	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Invalid alert number.")
+		_, err = b.bot.Send(msg)
 		return err
 	}
 
-	if isOwner := ContainsAlert(alerts, id); !isOwner {
-		msg := tgbotapi.NewMessage(chatId, "Permission Denied!")
+	alert, err := b.store.GetAlertByNumber(userId, int32(number))
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Alert not found.")
 		_, err := b.bot.Send(msg)
 		return err
 	}
 
-	// Delete the alert from the database
-	if err := b.store.DeleteAlert(id); err != nil {
+	if err := b.store.DeleteAlert(alert.Id); err != nil {
 		return err
 	}
 
@@ -400,7 +438,7 @@ func (b *TelegramBot) deleteAlert(chatId int64, userId int64, command string) er
 	return err
 }
 
-func (b *TelegramBot) viewTickers(chatId int64, userId int64) error {
+func (b *TelegramBot) viewSymbols(chatId, userId int64) error {
 	user, err := b.store.GetUserByUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -426,13 +464,7 @@ func (b *TelegramBot) viewTickers(chatId int64, userId int64) error {
 	_, err = b.bot.Send(msg)
 	return err
 }
-func (b *TelegramBot) sendMainMenu(chatId int64) error {
-	msg := tgbotapi.NewMessage(chatId, firstMenu)
-	msg.ParseMode = tgbotapi.ModeHTML
-	msg.ReplyMarkup = mainMenuMarkup
-	_, err := b.bot.Send(msg)
-	return err
-}
+
 func (b *TelegramBot) startAlertChecker() {
 	for {
 		b.checkAlert()
@@ -452,46 +484,34 @@ func (b *TelegramBot) checkAlert() {
 		}
 		ticker, exist := tickers[alert.Symbol]
 		if !exist {
-			fmt.Println("Ticker not found for alert ticker:", alert.Symbol, "id:", alert.Id)
-			msg := tgbotapi.NewMessage(alert.UserId, "Ticker not found for alert ticker:"+alert.Symbol)
+			log.Println("Symbol not found:", alert.Symbol, "id:", alert.Id)
+			msg := tgbotapi.NewMessage(alert.UserId, "Symbol not found:"+alert.Symbol)
 			_, err = b.bot.Send(msg)
 			continue
 		}
 
+		var isTriggered bool
+
 		if ticker.LivePrice == alert.TargetPrice {
-			fmt.Println("Alert hit pirce")
-			alert.Active = false
-			b.store.UpdateAlert(&alert)
-			msg := tgbotapi.NewMessage(alert.UserId, fmt.Sprintf("Alert triggered for %s! Current price: %.8f TargetPrice was: %.8f", alert.Symbol, ticker.LivePrice, alert.TargetPrice))
-			_, err := b.bot.Send(msg)
-			if err != nil {
-				log.Printf("Error sending alert notification to user %d: %s", alert.UserId, err.Error())
-			}
-			return
+			isTriggered = true
+		} else if alert.TargetPrice > alert.StartPrice && ((alert.TargetPrice < ticker.DailyHigh) || (alert.TargetPrice < ticker.LivePrice)) {
+			isTriggered = true
+		} else if alert.TargetPrice < alert.StartPrice && ((alert.TargetPrice > ticker.DailyLow) || (alert.TargetPrice > ticker.LivePrice)) {
+			isTriggered = true
+		} else {
+			isTriggered = false
 		}
-		// target_price is higher than start_price => ceil
-		// dailyHigh bigger than target_price
-		if alert.TargetPrice > alert.StartPrice && ((alert.TargetPrice < ticker.DailyHigh) || (alert.TargetPrice < ticker.LivePrice)) {
+
+		if isTriggered {
 			alert.Active = false
-			b.store.UpdateAlert(&alert)
-			msg := tgbotapi.NewMessage(alert.UserId, fmt.Sprintf("Alert triggered for %s! Current price: %.5f TargetPrice was: %.5f", alert.Symbol, ticker.LivePrice, alert.TargetPrice))
-			_, err := b.bot.Send(msg)
-			if err != nil {
-				log.Printf("Error sending alert notification to user %d: %s", alert.UserId, err.Error())
+			if err := b.store.UpdateAlert(&alert); err != nil {
+				log.Println("Error updating alert", err)
 			}
-			return
-		}
-		// target_price is less than start_price => floor
-		// dailyLow less than target_price
-		if alert.TargetPrice < alert.StartPrice && ((alert.TargetPrice > ticker.DailyLow) || (alert.TargetPrice > ticker.LivePrice)) {
-			alert.Active = false
-			b.store.UpdateAlert(&alert)
 			msg := tgbotapi.NewMessage(alert.UserId, fmt.Sprintf("Alert triggered for %s! Current price: %.8f TargetPrice was: %.8f", alert.Symbol, ticker.LivePrice, alert.TargetPrice))
-			_, err := b.bot.Send(msg)
-			if err != nil {
+			if _, err := b.bot.Send(msg); err != nil {
 				log.Printf("Error sending alert notification to user %d: %s", alert.UserId, err.Error())
+				return
 			}
-			return
 		}
 	}
 }

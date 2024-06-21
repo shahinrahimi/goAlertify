@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -17,6 +17,8 @@ type Storage interface {
 	GetAlert(id string) (*Alert, error)
 	GetAlerts() ([]Alert, error)
 	GetAlertsByUserId(userId int64) ([]Alert, error)
+	GetAlertByNumber(userId int64, number int32) (*Alert, error)
+	GetAlertsByUserIdAndSymbol(userId int64, symbol string) ([]Alert, error)
 	CreateAlert(alert *Alert) error
 	UpdateAlert(alert *Alert) error
 	DeleteAlert(id string) error
@@ -36,7 +38,7 @@ func NewSqliteStore() (*SqliteStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("DB Connected!")
+	log.Println("DB Connected!")
 
 	return &SqliteStore{
 		db,
@@ -58,7 +60,8 @@ func (s *SqliteStore) Init() error {
 	createAlertTable := `CREATE TABLE IF NOT EXISTS alerts (
 		id TEXT PRIMARY KEY,
 		user_id INTEGER,
-		symbol TEXT,
+		number INTEGER,
+		symbol TEXT NOT NULL,
 		description TEXT,
 		target_price REAL,
 		start_price REAL,
@@ -130,15 +133,15 @@ func (s *SqliteStore) DeleteUser(id string) error {
 // alert CRUD
 func (s *SqliteStore) GetAlert(id string) (*Alert, error) {
 	var alert Alert
-	err := s.db.QueryRow(`SELECT id, user_id, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE id = ?;`, id).
-		Scan(&alert.Id, &alert.UserId, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
+	err := s.db.QueryRow(`SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE id = ?;`, id).
+		Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 	return &alert, nil
 }
 func (s *SqliteStore) GetAlerts() ([]Alert, error) {
-	rows, err := s.db.Query(`SELECT id, user_id, symbol, description, target_price, start_price, active, created_at FROM alerts;`)
+	rows, err := s.db.Query(`SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts;`)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +150,7 @@ func (s *SqliteStore) GetAlerts() ([]Alert, error) {
 	var alerts []Alert
 	for rows.Next() {
 		var alert Alert
-		err := rows.Scan(&alert.Id, &alert.UserId, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
+		err := rows.Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -160,7 +163,7 @@ func (s *SqliteStore) GetAlerts() ([]Alert, error) {
 	return alerts, nil
 }
 func (s *SqliteStore) GetAlertsByUserId(userId int64) ([]Alert, error) {
-	rows, err := s.db.Query("SELECT id, user_id , symbol, description, target_price, start_price, active, created_at FROM alerts WHERE user_id = ?", userId)
+	rows, err := s.db.Query("SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE user_id = ?", userId)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +172,36 @@ func (s *SqliteStore) GetAlertsByUserId(userId int64) ([]Alert, error) {
 	var alerts []Alert
 	for rows.Next() {
 		var alert Alert
-		err := rows.Scan(&alert.Id, &alert.UserId, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
+		err := rows.Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		alerts = append(alerts, alert)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return alerts, nil
+}
+func (s *SqliteStore) GetAlertByNumber(userId int64, number int32) (*Alert, error) {
+	var alert Alert
+	if err := s.db.QueryRow(`SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE user_id = ? AND number = ?;`, userId, number).Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt); err != nil {
+		return nil, err
+	}
+	return &alert, nil
+}
+func (s *SqliteStore) GetAlertsByUserIdAndSymbol(userId int64, symbol string) ([]Alert, error) {
+	rows, err := s.db.Query("SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE user_id = ? AND symbol = ?", userId, symbol)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var alerts []Alert
+	for rows.Next() {
+		var alert Alert
+		err := rows.Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -182,19 +214,26 @@ func (s *SqliteStore) GetAlertsByUserId(userId int64) ([]Alert, error) {
 	return alerts, nil
 }
 func (s *SqliteStore) CreateAlert(alert *Alert) error {
+	var maxNumber int32
+	err := s.db.QueryRow("SELECT IFNULL(MAX(number), 0) FROM alerts WHERE user_id = ?", alert.UserId).Scan(&maxNumber)
+	if err != nil {
+		return err
+	}
+	alert.Number = maxNumber + 1
+
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
 	}
-	stmt, err := tx.Prepare(`INSERT INTO alerts (id, user_id, description, symbol, target_price, start_price, active, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?);`)
+	stmt, err := tx.Prepare(`INSERT INTO alerts (id, user_id, number, description, symbol, target_price, start_price, active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(alert.Id, alert.UserId, alert.Symbol, alert.Description, alert.TargetPrice, alert.StartPrice, alert.Active, alert.CreatedAt)
+	_, err = stmt.Exec(alert.Id, alert.UserId, alert.Number, alert.Description, alert.Symbol, alert.TargetPrice, alert.StartPrice, alert.Active, alert.CreatedAt)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -208,14 +247,14 @@ func (s *SqliteStore) UpdateAlert(alert *Alert) error {
 	if err != nil {
 		return err
 	}
-	stmt, err := tx.Prepare(`UPDATE alerts SET description=?, symbol=?, target_price=?, start_price=?, active=?, updated WHERE id=?;`)
+	stmt, err := tx.Prepare(`UPDATE alerts SET description=?, symbol=?, target_price=?, start_price=?, active=? WHERE id=?;`)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(alert.UserId, alert.Symbol, alert.Description, alert.TargetPrice, alert.StartPrice, alert.Active, alert.Id)
+	_, err = stmt.Exec(alert.Description, alert.Symbol, alert.TargetPrice, alert.StartPrice, alert.Active, alert.Id)
 	if err != nil {
 		tx.Rollback()
 		return err

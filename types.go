@@ -20,12 +20,20 @@ type User struct {
 type Alert struct {
 	Id          string    `json:"id"`
 	UserId      int64     `json:"user_id"`
+	Number      int32     `json:"number"`
 	Symbol      string    `json:"symbol"`
 	Description string    `json:"description"`
 	TargetPrice float64   `json:"target_price"`
 	StartPrice  float64   `json:"start_price"`
 	Active      bool      `json:"active"`
 	CreatedAt   time.Time `json:"created_at"`
+}
+
+func (a *Alert) ToString(livePrice float64) string {
+	var diffTargetPrice = a.TargetPrice - livePrice
+	var diffStartPrice = a.StartPrice - livePrice
+	return fmt.Sprintf("#%d (Active: %t)\n%s (%.5f) [diff:%.5f]\n%.5f => %.5f [deff:%.5f]",
+		a.Number, a.Active, a.Symbol, a.TargetPrice, diffTargetPrice, a.StartPrice, livePrice, diffStartPrice)
 }
 
 type Ticker struct {
@@ -65,6 +73,7 @@ func NewAlert(userId int64, symbol, description string, targetPrice, startPrice 
 	return &Alert{
 		Id:          fmt.Sprint("AL" + strconv.Itoa(rand.Int())),
 		UserId:      userId,
+		Number:      9999,
 		Description: description,
 		Symbol:      symbol,
 		TargetPrice: targetPrice,

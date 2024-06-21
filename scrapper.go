@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -16,12 +17,26 @@ type Scrapper interface {
 
 var tickers = make(map[string]*Ticker)
 
-func ScrapMajors() error {
+func StartScrapping() {
+	for {
+		err := scrapMajors()
+		if err != nil {
+			log.Println("Error scrapping majors:", err)
+		}
+		err = scrapMinors()
+		if err != nil {
+			log.Println("Error Scraping minors:", err)
+		}
+		time.Sleep(1 * time.Minute) // 1-minute interval
+	}
+}
+
+func scrapMajors() error {
 	url := "https://www.tradingview.com/markets/currencies/rates-major/"
 	return scrapUrl(url)
 }
 
-func ScrapMinors() error {
+func scrapMinors() error {
 	url := "https://www.tradingview.com/markets/currencies/rates-minor/"
 	return scrapUrl(url)
 }
@@ -38,12 +53,12 @@ func scrapUrl(url string) error {
 	elements := doc.Find("tbody tr")
 	elements.Each(func(index int, row *goquery.Selection) {
 		cells := row.Find("td")
-		if cells.Length() >= 10 {
+		if cells.Length() >= 8 {
 
 			symbol := strings.TrimSpace(cells.Eq(0).Text()[0:6])
 			livePriceStr := strings.TrimSpace(cells.Eq(1).Text())
-			dailyHighStr := strings.TrimSpace(cells.Eq(3).Text())
-			dailyLowStr := strings.TrimSpace(cells.Eq(5).Text())
+			dailyHighStr := strings.TrimSpace(cells.Eq(6).Text())
+			dailyLowStr := strings.TrimSpace(cells.Eq(7).Text())
 			cleanLivePrice := strings.Replace(livePriceStr, ",", "", -1)
 			cleanDailyhigh := strings.Replace(dailyHighStr, ",", "", -1)
 			cleanDailyLow := strings.Replace(dailyLowStr, ",", "", -1)
@@ -70,6 +85,8 @@ func scrapUrl(url string) error {
 				t := NewTicker(symbol, livePrice, dailyHigh, dailyLow)
 				tickers[symbol] = t
 			}
+		} else {
+			log.Println("Scrapper does not have sufficeint table columns.")
 		}
 	})
 	return nil
