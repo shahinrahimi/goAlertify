@@ -1,5 +1,5 @@
 build:
-	@go build -o ./bin/golalert
+	@go build -o ./bin/goAlertify
 
 run: build
-	@./bin/golalert
+	@./bin/goAlertify
