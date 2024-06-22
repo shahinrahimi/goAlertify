@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/joho/godotenv"
 )
@@ -32,5 +34,12 @@ func main() {
 	// start scrapper
 	go StartScrapping()
 
-	bot.Run()
+	go bot.Run()
+
+	// Keep the main function alive
+	log.Println("Start listening for updates.")
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	<-sig
+	log.Println("Shutting down gracefully...")
 }
