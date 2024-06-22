@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -58,17 +56,17 @@ func (b *TelegramBot) Run() {
 	u.Timeout = 60
 
 	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	// ctx, _ = context.WithCancel(ctx)
 
 	updates := b.bot.GetUpdatesChan(u)
 
 	go b.receiveUpdates(ctx, updates)
 	go b.startAlertChecker()
 
-	log.Println("Start listening for updates. Press enter to stop")
+	log.Println("Start listening for updates.")
 
-	bufio.NewReader(os.Stdin).ReadBytes('\n')
-	cancel()
+	// bufio.NewReader(os.Stdin).ReadBytes('\n')
+	// cancel()
 }
 
 // handlers
