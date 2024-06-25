@@ -252,8 +252,8 @@ func (b *TelegramBot) createAlert(chatId, userId int64, command string) error {
 		_, err := b.bot.Send(msg)
 		return err
 	}
-
-	t, exist := tickers[parts[1]]
+	tickerSymbol := strings.ToUpper(parts[1])
+	t, exist := tickers[tickerSymbol]
 	if !exist {
 		msg := tgbotapi.NewMessage(chatId, "Symbol not found, please try later or insert valid symbol.")
 		_, err := b.bot.Send(msg)
@@ -507,7 +507,7 @@ func (b *TelegramBot) checkAlert() {
 			if err := b.store.UpdateAlert(&alert); err != nil {
 				log.Println("Error updating alert", err)
 			}
-			msg := tgbotapi.NewMessage(alert.UserId, fmt.Sprintf("Alert triggered for %s! Current price: %.8f TargetPrice was: %.8f", alert.Symbol, ticker.LivePrice, alert.TargetPrice))
+			msg := tgbotapi.NewMessage(alert.UserId, fmt.Sprintf("Alert triggered for %s! Current price: %.8f TargetPrice was: %.8f, with Description: %s", alert.Symbol, ticker.LivePrice, alert.TargetPrice, alert.Description))
 			if _, err := b.bot.Send(msg); err != nil {
 				log.Printf("Error sending alert notification to user %d: %s", alert.UserId, err.Error())
 				return

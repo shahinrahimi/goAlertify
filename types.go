@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"strconv"
 	"time"
@@ -31,9 +32,29 @@ type Alert struct {
 
 func (a *Alert) ToString(livePrice float64) string {
 	var diffTargetPrice = a.TargetPrice - livePrice
-	var diffStartPrice = a.StartPrice - livePrice
-	return fmt.Sprintf("#%d (Active: %t)\n%s (%.5f) [diff:%.5f]\n%.5f => %.5f [deff:%.5f]",
-		a.Number, a.Active, a.Symbol, a.TargetPrice, diffTargetPrice, a.StartPrice, livePrice, diffStartPrice)
+	var diffStartPrice = livePrice - a.StartPrice
+	var activeIcon string
+	if a.Active {
+		activeIcon = "\U0001F7E2"
+	} else {
+		activeIcon = "\U0001F534"
+	}
+	var diffStartPriceIcon string
+	if diffStartPrice == 0 {
+		diffStartPriceIcon = "\u27A1\uFE0F"
+	} else if diffStartPrice > 0 {
+		diffStartPriceIcon = "\u2B06\uFE0F"
+	} else {
+		diffStartPriceIcon = "\u2B07\uFE0F"
+	}
+	var diffTargetPriceIcon string
+	if diffTargetPrice > 0 {
+		diffTargetPriceIcon = "\U0001F538"
+	} else {
+		diffTargetPriceIcon = "\U0001F539"
+	}
+	return fmt.Sprintf("#%d (Active: %s) %s\n%s (%.5f) [%s %.5f]\n%.5f => %.5f [%s %.5f]",
+		a.Number, activeIcon, a.Description, a.Symbol, a.TargetPrice, diffTargetPriceIcon, math.Abs(diffTargetPrice), a.StartPrice, livePrice, diffStartPriceIcon, diffStartPrice)
 }
 
 type Ticker struct {

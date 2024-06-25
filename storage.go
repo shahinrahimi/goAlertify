@@ -192,7 +192,7 @@ func (s *SqliteStore) GetAlertByNumber(userId int64, number int32) (*Alert, erro
 	return &alert, nil
 }
 func (s *SqliteStore) GetAlertsByUserIdAndSymbol(userId int64, symbol string) ([]Alert, error) {
-	rows, err := s.db.Query("SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE user_id = ? AND symbol = ?", userId, symbol)
+	rows, err := s.db.Query("SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE user_id = ? AND symbol = ? COLLATE NOCASE", userId, symbol)
 	if err != nil {
 		return nil, err
 	}
