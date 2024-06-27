@@ -1,0 +1,1210 @@
+Makefile
+build:
+	@go build -o ./bin/goAlertify
+
+run: build
+	@./bin/goAlertify
+
+README.md
+# GoAlertify
+
+
+go.mod
+module goAlertify
+
+go 1.22.4
+
+require (
+	github.com/PuerkitoBio/goquery v1.9.2
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
+	github.com/joho/godotenv v1.5.1
+	github.com/mattn/go-sqlite3 v1.14.22
+	golang.org/x/crypto v0.24.0
+)
+
+require (
+	github.com/andybalholm/cascadia v1.3.2 // indirect
+	golang.org/x/net v0.26.0 // indirect
+)
+
+
+go.sum
+github.com/PuerkitoBio/goquery v1.9.2 h1:4/wZksC3KgkQw7SQgkKotmKljk0M6V8TUvA8Wb4yPeE=
+github.com/PuerkitoBio/goquery v1.9.2/go.mod h1:GHPCaP0ODyyxqcNoFGYlAprUFH81NuRPd0GX3Zu2Mvk=
+github.com/andybalholm/cascadia v1.3.2 h1:3Xi6Dw5lHF15JtdcmAHD3i1+T8plmv7BQ/nsViSLyss=
+github.com/andybalholm/cascadia v1.3.2/go.mod h1:7gtRlve5FxPPgIgX36uWBX58OdBsSS6lUvCFb+h7KvU=
+github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 h1:wG8n/XJQ07TmjbITcGiUaOtXxdrINDz1b0J1w0SzqDc=
+github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1/go.mod h1:A2S0CWkNylc2phvKXWBBdD3K0iGnDBGbzRpISP2zBl8=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
+github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o4kU=
+github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
+github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
+golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
+golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
+golang.org/x/crypto v0.24.0 h1:mnl8DM0o513X8fdIkmyFE/5hTYxbwYOjDS/+rK6qpRI=
+golang.org/x/crypto v0.24.0/go.mod h1:Z1PMYSOR5nyMcyAVAIQSKCDwalqy85Aqn1x3Ws4L5DM=
+golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4/go.mod h1:jJ57K6gSWd91VN4djpZkiMVwK6gcyfeH4XE8wZrZaV4=
+golang.org/x/mod v0.8.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
+golang.org/x/net v0.0.0-20190620200207-3b0461eec859/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
+golang.org/x/net v0.0.0-20210226172049-e18ecbb05110/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
+golang.org/x/net v0.0.0-20220722155237-a158d28d115b/go.mod h1:XRhObCWvk6IyKnWLug+ECip1KBveYUHfp+8e9klMJ9c=
+golang.org/x/net v0.6.0/go.mod h1:2Tu9+aMcznHK/AK1HMvgo6xiTLG5rD5rZLDS+rp2Bjs=
+golang.org/x/net v0.9.0/go.mod h1:d48xBJpPfHeWQsugry2m+kC02ZBRGRgulfHnEXEuWns=
+golang.org/x/net v0.26.0 h1:soB7SVo0PWrY4vPW/+ay0jKDNScG2X9wFeYlXIvJsOQ=
+golang.org/x/net v0.26.0/go.mod h1:5YKkiSynbBIh3p6iOc/vibscux0x38BZDkn8sCUPxHE=
+golang.org/x/sync v0.0.0-20190423024810-112230192c58/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+golang.org/x/sync v0.1.0/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.7.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
+golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
+golang.org/x/term v0.5.0/go.mod h1:jMB1sMXY+tzblOD4FWmEbocvup2/aLOaQEp7JmGp78k=
+golang.org/x/term v0.7.0/go.mod h1:P32HKFT3hSsZrRxla30E9HqToFYAQPCMs/zFMBUFqPY=
+golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
+golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=
+golang.org/x/text v0.3.7/go.mod h1:u+2+/6zg+i71rQMx5EYifcz6MCKuco9NR6JIITiCfzQ=
+golang.org/x/text v0.7.0/go.mod h1:mrYo+phRRbMaCq/xk9113O4dZlRixOauAjOtrjsXDZ8=
+golang.org/x/text v0.9.0/go.mod h1:e1OnstbJyHTd6l/uOt8jFFHp6TRDWZR/bV3emEE/zU8=
+golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
+golang.org/x/tools v0.0.0-20191119224855-298f0cb1881e/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
+golang.org/x/tools v0.1.12/go.mod h1:hNGJHUnrk76NpqgfD5Aqm5Crs+Hm0VOH/i9J2+nxYbc=
+golang.org/x/tools v0.6.0/go.mod h1:Xwgl3UAJ/d3gWutnCtw505GrjyAbvKui8lOU390QaIU=
+golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
+
+
+main.go
+package main
+
+import (
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/joho/godotenv"
+)
+
+func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Panic("Error loading .env file", err)
+	}
+	store, err := NewSqliteStore()
+	if err != nil {
+		log.Panic("Database not found", err)
+	}
+	if err := store.Init(); err != nil {
+		log.Panic("Database does not initialized", err)
+	}
+
+	apiKey := os.Getenv("TELEGRAM_BOT_API_KEY")
+	if apiKey == "" {
+		log.Panic("Telegram bot apiKey not found")
+	}
+
+	bot, err := NewTelegramBot(store, apiKey)
+	if err != nil {
+		log.Panic("Telegram bot does not initialized", err)
+	}
+
+	// start scrapper
+	go StartScrapping()
+
+	go bot.Run()
+
+	// Keep the main function alive
+	log.Println("Start listening for updates.")
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	<-sig
+	log.Println("Shutting down gracefully...")
+}
+
+
+scrapper.go
+package main
+
+import (
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/PuerkitoBio/goquery"
+)
+
+type Scrapper interface {
+	ScrapMajors() error
+	ScrapMinors() error
+}
+
+var tickers = make(map[string]*Ticker)
+
+func StartScrapping() {
+	for {
+		err := scrapMajors()
+		if err != nil {
+			log.Println("Error scrapping majors:", err)
+		}
+		err = scrapMinors()
+		if err != nil {
+			log.Println("Error Scraping minors:", err)
+		}
+		time.Sleep(1 * time.Minute) // 1-minute interval
+	}
+}
+
+func scrapMajors() error {
+	url := "https://www.tradingview.com/markets/currencies/rates-major/"
+	return scrapUrl(url)
+}
+
+func scrapMinors() error {
+	url := "https://www.tradingview.com/markets/currencies/rates-minor/"
+	return scrapUrl(url)
+}
+
+func scrapUrl(url string) error {
+	res, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return err
+	}
+	elements := doc.Find("tbody tr")
+	elements.Each(func(index int, row *goquery.Selection) {
+		cells := row.Find("td")
+		if cells.Length() >= 8 {
+
+			symbol := strings.TrimSpace(cells.Eq(0).Text()[0:6])
+			livePriceStr := strings.TrimSpace(cells.Eq(1).Text())
+			dailyHighStr := strings.TrimSpace(cells.Eq(6).Text())
+			dailyLowStr := strings.TrimSpace(cells.Eq(7).Text())
+			cleanLivePrice := strings.Replace(livePriceStr, ",", "", -1)
+			cleanDailyhigh := strings.Replace(dailyHighStr, ",", "", -1)
+			cleanDailyLow := strings.Replace(dailyLowStr, ",", "", -1)
+
+			livePrice, err := strconv.ParseFloat(cleanLivePrice, 64)
+			if err != nil {
+				log.Printf("Error parsing live price for %s: %v", symbol, err)
+				return
+			}
+			dailyHigh, err := strconv.ParseFloat(cleanDailyhigh, 64)
+			if err != nil {
+				log.Printf("Error parsing daily high price for %s: %v", symbol, err)
+				return
+			}
+			dailyLow, err := strconv.ParseFloat(cleanDailyLow, 64)
+			if err != nil {
+				log.Printf("Error parsing daily low price for %s: %v", symbol, err)
+				return
+			}
+			ticker, exists := tickers[symbol]
+			if exists {
+				ticker.Update(livePrice, dailyHigh, dailyLow)
+			} else {
+				t := NewTicker(symbol, livePrice, dailyHigh, dailyLow)
+				tickers[symbol] = t
+			}
+		} else {
+			log.Println("Scrapper does not have sufficeint table columns.")
+		}
+	})
+	return nil
+}
+
+
+storage.go
+package main
+
+import (
+	"database/sql"
+	"log"
+
+	_ "github.com/mattn/go-sqlite3"
+)
+
+type Storage interface {
+	GetUser(id string) (*User, error)
+	GetUserByUserId(userId int64) (*User, error)
+	GetUsers() ([]User, error)
+	CreateUser(user User) error
+	UpdateUser(id string, user User) error
+
+	GetAlert(id string) (*Alert, error)
+	GetAlerts() ([]Alert, error)
+	GetAlertsByUserId(userId int64) ([]Alert, error)
+	GetAlertByNumber(userId int64, number int32) (*Alert, error)
+	GetAlertsByUserIdAndSymbol(userId int64, symbol string) ([]Alert, error)
+	CreateAlert(alert *Alert) error
+	UpdateAlert(alert *Alert) error
+	DeleteAlert(id string) error
+
+	DeleteUserAndAlerts(userId int64) error
+}
+
+type SqliteStore struct {
+	db *sql.DB
+}
+
+func NewSqliteStore() (*SqliteStore, error) {
+	if err := CreateDirecryIfNotExist("database"); err != nil {
+		return nil, err
+	}
+	db, err := sql.Open("sqlite3", "./database/mydb.db")
+	if err != nil {
+		return nil, err
+	}
+	log.Println("DB Connected!")
+
+	return &SqliteStore{
+		db,
+	}, nil
+}
+
+func (s *SqliteStore) Init() error {
+	// Create user and alert tables if they don't exist
+	createUserTable := `CREATE TABLE IF NOT EXISTS users (
+		id TEXT PRIMARY KEY,
+		user_id INTEGER NOT NULL UNIQUE,
+		username TEXT NOT NULL,
+		firstname TEXT NOT NULL,
+		lastname TEXT NOT NULL,
+		password TEXT NOT NULL,
+		created_at TIMESTAMP NOT NULL
+	);`
+
+	createAlertTable := `CREATE TABLE IF NOT EXISTS alerts (
+		id TEXT PRIMARY KEY,
+		user_id INTEGER,
+		number INTEGER,
+		symbol TEXT NOT NULL,
+		description TEXT,
+		target_price REAL,
+		start_price REAL,
+		active BOOLEAN,
+		created_at TIMESTAMP NOT NULL,
+		FOREIGN KEY (user_id) REFERENCES users (user_id)
+	);`
+
+	_, err := s.db.Exec(createUserTable)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(createAlertTable)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// users crud
+func (s *SqliteStore) GetUser(id string) (*User, error) {
+	row := s.db.QueryRow(`SELECT id, user_id, username, firstname, lastname ,created_at FROM users WHERE id = ?`, id)
+	var user User
+	if err := row.Scan(&user.Id, &user.UserId, &user.Username, &user.Firstname, &user.Lastname, &user.CreatedAt); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+func (s *SqliteStore) GetUserByUserId(userId int64) (*User, error) {
+	row := s.db.QueryRow(`SELECT id, user_id, username, firstname, lastname, password, created_at FROM users WHERE user_id = ?`, userId)
+	var user User
+	if err := row.Scan(&user.Id, &user.UserId, &user.Username, &user.Firstname, &user.Lastname, &user.Password, &user.CreatedAt); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+func (s *SqliteStore) GetUsers() ([]User, error) {
+	rows, err := s.db.Query(`SELECT id, user_id, username, firstname, lastname ,created_at FROM users`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []User
+	for rows.Next() {
+		var u User
+		if err := rows.Scan(&u.Id, &u.UserId, &u.Username, &u.Firstname, &u.Lastname, &u.CreatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+
+	return users, nil
+}
+func (s *SqliteStore) CreateUser(user User) error {
+	_, err := s.db.Exec(`INSERT INTO users (id, user_id, username, firstname, lastname ,password, created_at) VALUES (?,?,?,?,?,?,?)`, user.Id, user.UserId, user.Username, user.Firstname, user.Lastname, user.Password, user.CreatedAt)
+	return err
+}
+func (s *SqliteStore) UpdateUser(id string, user User) error {
+	_, err := s.db.Exec(`UPDATE users SET user_id = ?, username = ?, firstname = ?, lastname = ?, password = ?, cretated_at = ? WHERE id = ?`, user.UserId, user.Username, user.Firstname, user.Lastname, user.Password, user.CreatedAt, id)
+	return err
+}
+func (s *SqliteStore) DeleteUser(id string) error {
+	_, err := s.db.Exec(`DELETE FROM users WHERE id = ?`, id)
+	return err
+}
+
+// alert CRUD
+func (s *SqliteStore) GetAlert(id string) (*Alert, error) {
+	var alert Alert
+	err := s.db.QueryRow(`SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE id = ?;`, id).
+		Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &alert, nil
+}
+func (s *SqliteStore) GetAlerts() ([]Alert, error) {
+	rows, err := s.db.Query(`SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts;`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var alerts []Alert
+	for rows.Next() {
+		var alert Alert
+		err := rows.Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		alerts = append(alerts, alert)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return alerts, nil
+}
+func (s *SqliteStore) GetAlertsByUserId(userId int64) ([]Alert, error) {
+	rows, err := s.db.Query("SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE user_id = ?", userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var alerts []Alert
+	for rows.Next() {
+		var alert Alert
+		err := rows.Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		alerts = append(alerts, alert)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return alerts, nil
+}
+func (s *SqliteStore) GetAlertByNumber(userId int64, number int32) (*Alert, error) {
+	var alert Alert
+	if err := s.db.QueryRow(`SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE user_id = ? AND number = ?;`, userId, number).Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt); err != nil {
+		return nil, err
+	}
+	return &alert, nil
+}
+func (s *SqliteStore) GetAlertsByUserIdAndSymbol(userId int64, symbol string) ([]Alert, error) {
+	rows, err := s.db.Query("SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE user_id = ? AND symbol = ? COLLATE NOCASE", userId, symbol)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var alerts []Alert
+	for rows.Next() {
+		var alert Alert
+		err := rows.Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		alerts = append(alerts, alert)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return alerts, nil
+}
+func (s *SqliteStore) CreateAlert(alert *Alert) error {
+	var maxNumber int32
+	err := s.db.QueryRow("SELECT IFNULL(MAX(number), 0) FROM alerts WHERE user_id = ?", alert.UserId).Scan(&maxNumber)
+	if err != nil {
+		return err
+	}
+	alert.Number = maxNumber + 1
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	stmt, err := tx.Prepare(`INSERT INTO alerts (id, user_id, number, description, symbol, target_price, start_price, active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(alert.Id, alert.UserId, alert.Number, alert.Description, alert.Symbol, alert.TargetPrice, alert.StartPrice, alert.Active, alert.CreatedAt)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+func (s *SqliteStore) UpdateAlert(alert *Alert) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	stmt, err := tx.Prepare(`UPDATE alerts SET description=?, symbol=?, target_price=?, start_price=?, active=? WHERE id=?;`)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(alert.Description, alert.Symbol, alert.TargetPrice, alert.StartPrice, alert.Active, alert.Id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+func (s *SqliteStore) DeleteAlert(id string) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`DELETE FROM alerts WHERE id=?;`, id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+	return nil
+}
+func (s *SqliteStore) DeleteUserAndAlerts(userId int64) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`DELETE FROM alerts WHERE user_id = ?`, userId)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	_, err = tx.Exec(`DELETE FROM users WHERE user_id = ?`, userId)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+
+
+telegram.go
+package main
+
+import (
+	"bufio"
+	"context"
+	"database/sql"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+)
+
+type TelegramBot struct {
+	bot   *tgbotapi.BotAPI
+	store Storage
+}
+
+var (
+	// Database connection
+	// Menu texts
+	firstMenu = "<b>Main Menu</b>\n\nChoose an option."
+	alertMenu = "<b>Alert Menu</b>\n\n1. Add Alert\n2. View Alerts\n3. Update Alert\n4. Delete Alert\n\nUse /addalert, /viewalerts, /updatealert, /deletealert commands respectively."
+
+	// Button texts
+	alertButton = "Manage Alerts"
+
+	// Store bot screaming status
+	screaming = false
+
+	// Keyboard layout for the main menu
+	mainMenuMarkup = tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData(alertButton, alertButton),
+		),
+	)
+)
+
+func NewTelegramBot(store Storage, apiKey string) (*TelegramBot, error) {
+	bot, err := tgbotapi.NewBotAPI(apiKey)
+	if err != nil {
+		return nil, err
+	}
+	return &TelegramBot{
+		store: store,
+		bot:   bot,
+	}, nil
+}
+
+func (b *TelegramBot) Run() {
+	// debug telegram bot
+	b.bot.Debug = false
+
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+
+	ctx := context.Background()
+	ctx = context.WithoutCancel(ctx)
+
+	updates := b.bot.GetUpdatesChan(u)
+
+	go b.receiveUpdates(ctx, updates)
+	go b.startAlertChecker()
+
+	log.Println("Start listening for updates.")
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	// cancel()
+}
+
+// handlers
+func (b *TelegramBot) receiveUpdates(ctx context.Context, updates tgbotapi.UpdatesChannel) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case update := <-updates:
+			b.handleUpdate(update)
+		}
+	}
+}
+func (b *TelegramBot) handleUpdate(update tgbotapi.Update) {
+	switch {
+	case update.Message != nil:
+		b.handleMessage(update.Message)
+	case update.CallbackQuery != nil:
+		b.handleButton(update.CallbackQuery)
+	}
+}
+func (b *TelegramBot) handleMessage(message *tgbotapi.Message) {
+	user := message.From
+	text := message.Text
+
+	log.Printf("id: %d, %s wrote %s", user.ID, user.FirstName, text)
+
+	var err error
+	if strings.HasPrefix(text, "/") {
+		err = b.handleCommand(message.Chat.ID, user.ID, text, user.UserName, user.FirstName, user.LastName)
+	} else if screaming && len(text) > 0 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, strings.ToUpper(text))
+		msg.Entities = message.Entities
+		_, err = b.bot.Send(msg)
+	} else {
+		copyMsg := tgbotapi.NewCopyMessage(message.Chat.ID, message.Chat.ID, message.MessageID)
+		_, err = b.bot.CopyMessage(copyMsg)
+	}
+
+	if err != nil {
+		log.Printf("An error occurred: %s", err.Error())
+	}
+}
+func (b *TelegramBot) handleButton(query *tgbotapi.CallbackQuery) {
+	var text string
+	markup := tgbotapi.NewInlineKeyboardMarkup()
+	message := query.Message
+
+	switch query.Data {
+	case alertButton:
+		text = alertMenu
+	default:
+		text = firstMenu
+		markup = mainMenuMarkup
+	}
+
+	callbackCfg := tgbotapi.NewCallback(query.ID, "")
+	b.bot.Send(callbackCfg)
+
+	msg := tgbotapi.NewEditMessageTextAndMarkup(message.Chat.ID, message.MessageID, text, markup)
+	msg.ParseMode = tgbotapi.ModeHTML
+	b.bot.Send(msg)
+}
+func (b *TelegramBot) handleCommand(chatId int64, userId int64, command, username, fisrtname, lastname string) error {
+	var err error
+
+	switch {
+	case strings.HasPrefix(command, "/start"):
+		err = b.registerUser(chatId, userId, username, fisrtname, lastname)
+	case strings.HasPrefix(command, "/viewuser"):
+		err = b.viewUser(chatId, userId)
+	case strings.HasPrefix(command, "/deleteuser"):
+		err = b.deleteUser(chatId, userId)
+	case strings.HasPrefix(command, "/createalert"):
+		err = b.createAlert(chatId, userId, command)
+	case strings.HasPrefix(command, "/viewalerts"):
+		err = b.viewAlerts(chatId, userId, command)
+	case strings.HasPrefix(command, "/updatealert"):
+		err = b.updateAlert(chatId, userId, command)
+	case strings.HasPrefix(command, "/deletealert"):
+		err = b.deleteAlert(chatId, userId, command)
+	case strings.HasPrefix(command, "/viewsymbols"):
+		err = b.viewSymbols(chatId, userId)
+	default:
+		// Handle unknown commands or provide instructions
+		msg := tgbotapi.NewMessage(chatId, "Unknown command. Available commands: /start, /createalert, /updatealert, /deletealert, /viewalerts, /viewsymbols")
+		_, err := b.bot.Send(msg)
+		if err != nil {
+			log.Println("Error sending message:", err)
+		}
+	}
+
+	return err
+}
+
+// crud on user
+func (b *TelegramBot) registerUser(chatId, userId int64, username, fisrtname, lastname string) error {
+	user, err := b.store.GetUserByUserId(userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if user != nil {
+		msg := tgbotapi.NewMessage(chatId, "You are already registered.")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	newUser, err := NewUser(userId, username, fisrtname, lastname, "default_pass")
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Error creating user object.")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	if err := b.store.CreateUser(*newUser); err != nil {
+		fmt.Println(err)
+		msg := tgbotapi.NewMessage(chatId, "Error storing user to DB.")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+	msg := tgbotapi.NewMessage(chatId, "You have been registered successfully.")
+	_, err = b.bot.Send(msg)
+	return err
+}
+func (b *TelegramBot) viewUser(chatId, userId int64) error {
+	user, err := b.store.GetUserByUserId(userId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			msg := tgbotapi.NewMessage(chatId, "User not found.")
+			_, err := b.bot.Send(msg)
+			return err
+		}
+		return err
+	}
+
+	// Format user data for display
+	userData := fmt.Sprintf("User ID: %d\nChat ID: %d\nUsername: %s\nFistname: %s\nLastname: %s\nPassword: %s\nCreated At: %s",
+		user.UserId, chatId, user.Username, user.Firstname, user.Lastname, user.Password, user.CreatedAt.Format(time.RFC3339))
+
+	msg := tgbotapi.NewMessage(chatId, userData)
+	_, err = b.bot.Send(msg)
+	return err
+}
+func (b *TelegramBot) deleteUser(chatId, userId int64) error {
+	user, err := b.store.GetUserByUserId(userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if user == nil {
+		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+	if err := b.store.DeleteUserAndAlerts(userId); err != nil {
+		msg := tgbotapi.NewMessage(chatId, "user data can not be deleted.")
+		_, _ = b.bot.Send(msg)
+		return err
+	}
+
+	msg := tgbotapi.NewMessage(chatId, "User and all associated alerts have been deleted successfully.")
+	_, err = b.bot.Send(msg)
+	return err
+}
+
+// crud alert
+func (b *TelegramBot) createAlert(chatId, userId int64, command string) error {
+	user, err := b.store.GetUserByUserId(userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if user == nil {
+		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+	// Extract alert details from the command
+	parts := strings.SplitN(command, " ", 4)
+	println(len(parts))
+	if len(parts) < 3 {
+		msg := tgbotapi.NewMessage(chatId, "Usage: /createalert <ticker> <traget_price> <description>")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+	tickerSymbol := strings.ToUpper(parts[1])
+	t, exist := tickers[tickerSymbol]
+	if !exist {
+		msg := tgbotapi.NewMessage(chatId, "Symbol not found, please try later or insert valid symbol.")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	targetPrice, err := strconv.ParseFloat(parts[2], 64)
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Invalid target price.")
+		_, err = b.bot.Send(msg)
+		return err
+	}
+
+	// check if target_price is not in the range of daily (High and Low)
+	if targetPrice < t.DailyHigh && targetPrice > t.DailyLow {
+		msg := tgbotapi.NewMessage(chatId, "Invalid target price.\ntarget_price already in range of daily hight and low.")
+		_, err = b.bot.Send(msg)
+		return err
+	}
+	var description string
+	if len(parts) == 4 {
+		description = parts[3]
+	} else {
+		description = ""
+	}
+	newAlert := NewAlert(userId, t.Symbol, description, targetPrice, t.LivePrice)
+	if err := b.store.CreateAlert(newAlert); err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Error storing the alert.")
+		_, err = b.bot.Send(msg)
+		return err
+	}
+
+	msg := tgbotapi.NewMessage(chatId, "Alert added successfully.")
+	_, err = b.bot.Send(msg)
+	return err
+}
+func (b *TelegramBot) viewAlerts(chatId, userId int64, command string) error {
+	user, err := b.store.GetUserByUserId(userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if user == nil {
+		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+	var alerts []Alert
+	parts := strings.SplitN(command, " ", 2)
+	if len(parts) == 1 {
+		// view all alerts
+		alerts, err = b.store.GetAlertsByUserId(userId)
+		log.Println(len(alerts))
+		if err != nil {
+			return err
+		}
+	} else if len(parts) == 2 {
+		// view alerts with symbol
+		symbol := parts[1]
+		alerts, err = b.store.GetAlertsByUserIdAndSymbol(userId, symbol)
+		if err != nil {
+			return err
+		}
+	} else {
+		msg := tgbotapi.NewMessage(chatId, "Usage: /viewalerts <symbol(optional)>")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	var alertStrings []string
+	var livePrice float64
+	for _, alert := range alerts {
+		t, exist := tickers[alert.Symbol]
+		if exist {
+			livePrice = t.LivePrice
+		} else {
+			livePrice = 0
+		}
+
+		alertStrings = append(alertStrings, alert.ToString(livePrice))
+	}
+
+	if len(alertStrings) == 0 {
+		msg := tgbotapi.NewMessage(chatId, "No alerts found.")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	msg := tgbotapi.NewMessage(chatId, strings.Join(alertStrings, "\n\n"))
+	_, err = b.bot.Send(msg)
+	return err
+}
+func (b *TelegramBot) updateAlert(chatId, userId int64, command string) error {
+	user, err := b.store.GetUserByUserId(userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if user == nil {
+		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+	// Extract alert details from the command
+	parts := strings.SplitN(command, " ", 3)
+	if len(parts) < 3 {
+		msg := tgbotapi.NewMessage(chatId, "Usage: /updatealert <number> <target_price>")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	number, err := strconv.ParseInt(parts[1], 10, 32)
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Invalid alert number.")
+		_, err = b.bot.Send(msg)
+		return err
+	}
+	alert, err := b.store.GetAlertByNumber(userId, int32(number))
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Alert not found.")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	targetPrice, err := strconv.ParseFloat(parts[2], 64)
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Invalid target price.")
+		_, err = b.bot.Send(msg)
+		return err
+	}
+	ticker, exists := tickers[alert.Symbol]
+	if !exists {
+		msg := tgbotapi.NewMessage(chatId, "Live price not available for editing alert")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	alert.StartPrice = ticker.LivePrice
+	alert.TargetPrice = targetPrice
+	if err := b.store.UpdateAlert(alert); err != nil {
+		return err
+	}
+	msg := tgbotapi.NewMessage(chatId, "Alert updated successfully.")
+	_, err = b.bot.Send(msg)
+	return err
+}
+func (b *TelegramBot) deleteAlert(chatId, userId int64, command string) error {
+	user, err := b.store.GetUserByUserId(userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if user == nil {
+		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+	parts := strings.SplitN(command, " ", 2)
+	if len(parts) < 2 {
+		msg := tgbotapi.NewMessage(chatId, "Usage: /deletealert <number>")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	number, err := strconv.ParseInt(parts[1], 10, 32)
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Invalid alert number.")
+		_, err = b.bot.Send(msg)
+		return err
+	}
+
+	alert, err := b.store.GetAlertByNumber(userId, int32(number))
+	if err != nil {
+		msg := tgbotapi.NewMessage(chatId, "Alert not found.")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	if err := b.store.DeleteAlert(alert.Id); err != nil {
+		return err
+	}
+
+	msg := tgbotapi.NewMessage(chatId, "Alert deleted successfully.")
+	_, err = b.bot.Send(msg)
+	return err
+}
+
+func (b *TelegramBot) viewSymbols(chatId, userId int64) error {
+	user, err := b.store.GetUserByUserId(userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if user == nil {
+		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+	var tickerStrings []string
+	for _, ticker := range tickers {
+		tickerStrings = append(tickerStrings, fmt.Sprintf("Symbol: %s\n\tNow: %.4f\n\tHigh: %.4f\n\tLow: %.4f\n\n",
+			ticker.Symbol, ticker.LivePrice, ticker.DailyHigh, ticker.DailyLow))
+	}
+
+	if len(tickerStrings) == 0 {
+		msg := tgbotapi.NewMessage(chatId, "No tickers found.")
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	msg := tgbotapi.NewMessage(chatId, strings.Join(tickerStrings, "\n\n"))
+	_, err = b.bot.Send(msg)
+	return err
+}
+
+func (b *TelegramBot) startAlertChecker() {
+	for {
+		b.checkAlert()
+		time.Sleep(1 * time.Minute)
+	}
+}
+func (b *TelegramBot) checkAlert() {
+	alerts, err := b.store.GetAlerts()
+	if err != nil {
+		log.Printf("Error retrieving alerts: %s", err.Error())
+		return
+	}
+
+	for _, alert := range alerts {
+		if !alert.Active {
+			continue
+		}
+		ticker, exist := tickers[alert.Symbol]
+		if !exist {
+			log.Println("Symbol not found:", alert.Symbol, "id:", alert.Id)
+			msg := tgbotapi.NewMessage(alert.UserId, "Symbol not found:"+alert.Symbol)
+			_, err = b.bot.Send(msg)
+			continue
+		}
+
+		var isTriggered bool
+
+		if ticker.LivePrice == alert.TargetPrice {
+			isTriggered = true
+		} else if alert.TargetPrice > alert.StartPrice && ((alert.TargetPrice < ticker.DailyHigh) || (alert.TargetPrice < ticker.LivePrice)) {
+			isTriggered = true
+		} else if alert.TargetPrice < alert.StartPrice && ((alert.TargetPrice > ticker.DailyLow) || (alert.TargetPrice > ticker.LivePrice)) {
+			isTriggered = true
+		} else {
+			isTriggered = false
+		}
+
+		if isTriggered {
+			alert.Active = false
+			if err := b.store.UpdateAlert(&alert); err != nil {
+				log.Println("Error updating alert", err)
+			}
+			msg := tgbotapi.NewMessage(alert.UserId, fmt.Sprintf("Alert triggered for %s! Current price: %.8f TargetPrice was: %.8f, with Description: %s", alert.Symbol, ticker.LivePrice, alert.TargetPrice, alert.Description))
+			if _, err := b.bot.Send(msg); err != nil {
+				log.Printf("Error sending alert notification to user %d: %s", alert.UserId, err.Error())
+				return
+			}
+		}
+	}
+}
+
+
+types.go
+package main
+
+import (
+	"fmt"
+	"math"
+	"math/rand"
+	"strconv"
+	"time"
+)
+
+type User struct {
+	Id        string    `json:"id"`
+	UserId    int64     `json:"user_id"`
+	Username  string    `json:"username"`
+	Firstname string    `json:"fistname"`
+	Lastname  string    `json:"lastname"`
+	Password  string    `json:"password"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type Alert struct {
+	Id          string    `json:"id"`
+	UserId      int64     `json:"user_id"`
+	Number      int32     `json:"number"`
+	Symbol      string    `json:"symbol"`
+	Description string    `json:"description"`
+	TargetPrice float64   `json:"target_price"`
+	StartPrice  float64   `json:"start_price"`
+	Active      bool      `json:"active"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+func (a *Alert) ToString(livePrice float64) string {
+	var diffTargetPrice = a.TargetPrice - livePrice
+	var diffStartPrice = livePrice - a.StartPrice
+	var activeIcon string
+	if a.Active {
+		activeIcon = "\U0001F7E2"
+	} else {
+		activeIcon = "\U0001F534"
+	}
+	var diffStartPriceIcon string
+	if diffStartPrice == 0 {
+		diffStartPriceIcon = "\u27A1\uFE0F"
+	} else if diffStartPrice > 0 {
+		diffStartPriceIcon = "\u2B06\uFE0F"
+	} else {
+		diffStartPriceIcon = "\u2B07\uFE0F"
+	}
+	var diffTargetPriceIcon string
+	if diffTargetPrice > 0 {
+		diffTargetPriceIcon = "\U0001F538"
+	} else {
+		diffTargetPriceIcon = "\U0001F539"
+	}
+	return fmt.Sprintf("#%d (Active: %s) %s\n%s (%.5f) [%s %.5f]\n%.5f => %.5f [%s %.5f]",
+		a.Number, activeIcon, a.Description, a.Symbol, a.TargetPrice, diffTargetPriceIcon, math.Abs(diffTargetPrice), a.StartPrice, livePrice, diffStartPriceIcon, diffStartPrice)
+}
+
+type Ticker struct {
+	Symbol    string    `json:"name"`
+	LivePrice float64   `json:"live_price"`
+	DailyHigh float64   `json:"daily_high"`
+	DailyLow  float64   `json:"daily_low"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (t *Ticker) Update(livePrice, dailyHigh, dailyLow float64) error {
+	t.UpdatedAt = time.Now().UTC()
+	t.LivePrice = livePrice
+	t.DailyHigh = dailyHigh
+	t.DailyLow = dailyLow
+	return nil
+}
+
+func NewUser(user_id int64, username, firstname, lastname, password string) (*User, error) {
+	hashedPassword, err := HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
+	return &User{
+		Id:        fmt.Sprint("GU" + strconv.Itoa(rand.Int())),
+		UserId:    user_id,
+		Username:  username,
+		Firstname: firstname,
+		Lastname:  lastname,
+		Password:  hashedPassword,
+		CreatedAt: time.Now().UTC(),
+	}, nil
+}
+
+func NewAlert(userId int64, symbol, description string, targetPrice, startPrice float64) *Alert {
+	return &Alert{
+		Id:          fmt.Sprint("AL" + strconv.Itoa(rand.Int())),
+		UserId:      userId,
+		Number:      9999,
+		Description: description,
+		Symbol:      symbol,
+		TargetPrice: targetPrice,
+		StartPrice:  startPrice,
+		Active:      true,
+		CreatedAt:   time.Now().UTC(),
+	}
+}
+
+func NewTicker(symbol string, livePrice float64, dailyHigh float64, dailyLow float64) *Ticker {
+	return &Ticker{
+		Symbol:    symbol,
+		LivePrice: livePrice,
+		DailyHigh: dailyHigh,
+		DailyLow:  dailyLow,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+	}
+}
+
+
+utils.go
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"golang.org/x/crypto/bcrypt"
+)
+
+func CreateDirecryIfNotExist(directory string) error {
+	// check if directory exist
+	if _, err := os.Stat(directory); os.IsNotExist(err) {
+		// try creating a new directory
+		if err := os.Mkdir(directory, 0755); err != nil {
+			fmt.Println("Error creating directory for database", err)
+			return err
+		} else {
+			fmt.Println("New directory for database created!")
+			return nil
+		}
+	} else {
+		return nil
+	}
+}
+
+func HashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
+
+func ContainsAlert(alerts []Alert, id string) bool {
+	for _, alert := range alerts {
+		if alert.Id == id {
+			return true
+		}
+	}
+	return false
+}
+
+

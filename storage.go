@@ -66,6 +66,7 @@ func (s *SqliteStore) Init() error {
 		target_price REAL,
 		start_price REAL,
 		active BOOLEAN,
+		updated_at TIMESTAMP NOT NULL,
 		created_at TIMESTAMP NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES users (user_id)
 	);`

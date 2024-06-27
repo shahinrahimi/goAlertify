@@ -478,8 +478,15 @@ func (b *TelegramBot) checkAlert() {
 		return
 	}
 
+	today := time.Now().Truncate(24 * time.Hour)
+
 	for _, alert := range alerts {
-		if !alert.Active {
+		if !alert.Active && alert.UpdatedAt.Before(today) {
+			alert.Active = true
+			alert.UpdatedAt = time.Now().UTC()
+			if err := b.store.UpdateAlert(&alert); err != nil {
+				log.Println("Error updating alert", err)
+			}
 			continue
 		}
 		ticker, exist := tickers[alert.Symbol]
@@ -504,6 +511,7 @@ func (b *TelegramBot) checkAlert() {
 
 		if isTriggered {
 			alert.Active = false
+			alert.UpdatedAt = time.Now().UTC()
 			if err := b.store.UpdateAlert(&alert); err != nil {
 				log.Println("Error updating alert", err)
 			}

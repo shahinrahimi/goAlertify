@@ -28,6 +28,7 @@ type Alert struct {
 	StartPrice  float64   `json:"start_price"`
 	Active      bool      `json:"active"`
 	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 func (a *Alert) ToString(livePrice float64) string {
@@ -58,7 +59,9 @@ func (a *Alert) ToString(livePrice float64) string {
 }
 
 type Ticker struct {
-	Symbol    string    `json:"name"`
+	Symbol    string    `json:"symbol"`
+	Name      string    `json:"name"`
+	Category  string    `json:"category"`
 	LivePrice float64   `json:"live_price"`
 	DailyHigh float64   `json:"daily_high"`
 	DailyLow  float64   `json:"daily_low"`
@@ -101,12 +104,15 @@ func NewAlert(userId int64, symbol, description string, targetPrice, startPrice 
 		StartPrice:  startPrice,
 		Active:      true,
 		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
 	}
 }
 
-func NewTicker(symbol string, livePrice float64, dailyHigh float64, dailyLow float64) *Ticker {
+func NewTicker(symbol, name, category string, livePrice, dailyHigh, dailyLow float64) *Ticker {
 	return &Ticker{
 		Symbol:    symbol,
+		Name:      name,
+		Category:  category,
 		LivePrice: livePrice,
 		DailyHigh: dailyHigh,
 		DailyLow:  dailyLow,
