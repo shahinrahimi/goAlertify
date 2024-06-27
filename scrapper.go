@@ -11,18 +11,13 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type Scrapper interface {
-	ScrapMajors() error
-	ScrapMinors() error
-}
-
 var tickers = make(map[string]*Ticker)
 
 func StartScrapping() {
 	for {
-		// scrapForex()
+		scrapForex()
 		scrapFeatures()
-		// scrapCryptos()
+		scrapCryptos()
 		time.Sleep(5 * time.Minute) // 1-minute interval
 	}
 }
@@ -33,8 +28,8 @@ func scrapForex() {
 }
 
 func scrapFeatures() {
-	go scrap("https://www.tradingview.com/markets/futures/quotes-metals/", processForex)
-	go scrap("https://www.tradingview.com/markets/futures/quotes-energy/", processForex)
+	go scrap("https://www.tradingview.com/markets/futures/quotes-metals/", processFeatures)
+	go scrap("https://www.tradingview.com/markets/futures/quotes-energy/", processFeatures)
 }
 
 func scrapCryptos() {
@@ -65,13 +60,29 @@ func processForex(row *goquery.Selection) {
 	}
 
 	symbol := strings.TrimSpace(strings.Split(cells.Eq(0).Text(), " ")[0])
+	name := strings.TrimSpace(cells.Eq(0).Find("sup").Eq(0).Text())
 	livePriceStr := strings.TrimSpace(cells.Eq(1).Text())
 	dailyHighStr := strings.TrimSpace(cells.Eq(6).Text())
 	dailyLowStr := strings.TrimSpace(cells.Eq(7).Text())
-	processPrices(symbol, "forex", livePriceStr, dailyHighStr, dailyLowStr)
+	processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, "Forex")
 }
 
 func processFeatures(row *goquery.Selection) {
+	cells := row.Find("td")
+	if cells.Length() < 6 {
+		log.Println("Scrapper does not have sufficient table columns.")
+		return
+	}
+
+	symbol := strings.TrimSpace(strings.Replace(cells.Eq(0).Find("a").Text(), "!", "", -1))
+	name := strings.TrimSpace(cells.Eq(0).Find("sup").Eq(0).Text())
+	livePriceStr := strings.TrimSpace(cells.Eq(1).Text())
+	dailyHighStr := strings.TrimSpace(cells.Eq(4).Text())
+	dailyLowStr := strings.TrimSpace(cells.Eq(5).Text())
+	processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, "Features")
+}
+
+func processCryptos(row *goquery.Selection) {
 	cells := row.Find("td")
 	if cells.Length() < 3 {
 		log.Println("Scrapper does not have sufficient table columns.")
@@ -80,26 +91,11 @@ func processFeatures(row *goquery.Selection) {
 
 	symbol := strings.TrimSpace(cells.Eq(0).Find("a").Eq(0).Text())
 	name := strings.TrimSpace(cells.Eq(0).Find("sup").Eq(0).Text())
-	dailyHighStr := strings.TrimSpace(cells.Eq(6).Text())
-	dailyLowStr := strings.TrimSpace(cells.Eq(7).Text())
-	livePriceStr := strings.TrimSpace(cells.Eq(1).Text())
-	processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr)
-}
-
-func processCryptos(row *goquery.Selection) {
-	cells := row.Find("td")
-	if cells.Length() < 8 {
-		log.Println("Scrapper does not have sufficient table columns.")
-		return
-	}
-
-	symbol := strings.TrimSpace(cells.Eq(0).Find("a").Eq(0).Text())
-	name := strings.TrimSpace(cells.Eq(0).Find("sup").Eq(0).Text())
 	livePriceStr := strings.TrimSpace(strings.Replace(cells.Eq(2).Text(), "USD", "", -1))
-	processPrices(symbol, name, livePriceStr, "0", "0")
+	processPrices(symbol, name, livePriceStr, "0", "0", "Crypto")
 }
 
-func processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr string) {
+func processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, category string) {
 	cleanLivePrice := strings.Replace(livePriceStr, ",", "", -1)
 	livePrice, err := strconv.ParseFloat(cleanLivePrice, 64)
 	if err != nil {
@@ -130,8 +126,8 @@ func processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr string)
 		ticker.Update(livePrice, dailyHigh, dailyLow)
 
 	} else {
-		t := NewTicker(symbol, name, "forex", livePrice, dailyHigh, dailyLow)
+		t := NewTicker(symbol, name, category, livePrice, dailyHigh, dailyLow)
 		tickers[symbol] = t
-		fmt.Println(t.Category, t.Symbol, t.Name, t.DailyHigh, t.DailyLow)
+		fmt.Println(t.Category, t.Symbol, t.Name, t.LivePrice, t.DailyHigh, t.DailyLow)
 	}
 }
