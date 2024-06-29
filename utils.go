@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -38,4 +39,28 @@ func ContainsAlert(alerts []Alert, id string) bool {
 		}
 	}
 	return false
+}
+
+func SplitMessage(message string, chunkSize int) []string {
+	if len(message) <= chunkSize {
+		return []string{message}
+	}
+
+	var parts []string
+	for len(message) > chunkSize {
+		// Find the last space within the chunk to avoid cutting words
+		i := strings.LastIndex(message[:chunkSize], " ")
+		if i == -1 {
+			i = chunkSize
+		}
+
+		parts = append(parts, message[:i])
+		message = message[i:]
+	}
+
+	if len(message) > 0 {
+		parts = append(parts, message)
+	}
+
+	return parts
 }

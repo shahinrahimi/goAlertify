@@ -438,15 +438,34 @@ func (b *TelegramBot) deleteAlert(chatId, userId int64, command string) error {
 	return err
 }
 
+func (b *TelegramBot) sendMessage(chatId int64, msgStr string) error {
+	msg := tgbotapi.NewMessage(chatId, msgStr)
+	_, err := b.bot.Send(msg)
+	return err
+}
+func (b *TelegramBot) sendMessageInChunks(chatId int64, msgStr string) error {
+	const maxMessageSize = 4096
+	// Split the message into chunks
+	parts := SplitMessage(msgStr, maxMessageSize)
+
+	// Send each chunk
+	for _, part := range parts {
+		if err := b.sendMessage(chatId, part); err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
 func (b *TelegramBot) viewSymbols(chatId, userId int64) error {
 	user, err := b.store.GetUserByUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
 	if user == nil {
-		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
-		_, err := b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "You are not registered.\nUsage: /start")
 	}
 	var tickerStrings []string
 	for _, ticker := range tickers {
@@ -455,14 +474,11 @@ func (b *TelegramBot) viewSymbols(chatId, userId int64) error {
 	}
 
 	if len(tickerStrings) == 0 {
-		msg := tgbotapi.NewMessage(chatId, "No tickers found.")
-		_, err := b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "No tickers found.")
 	}
 
-	msg := tgbotapi.NewMessage(chatId, strings.Join(tickerStrings, "\n\n"))
-	_, err = b.bot.Send(msg)
-	return err
+	return b.sendMessageInChunks(chatId, strings.Join(tickerStrings, "\n\n"))
+
 }
 func (b *TelegramBot) startAlertChecker() {
 	for {
