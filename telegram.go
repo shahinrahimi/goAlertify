@@ -480,6 +480,7 @@ func (b *TelegramBot) checkAlert() {
 	today := time.Now().Truncate(24 * time.Hour)
 
 	for _, alert := range alerts {
+		// reseting alarms if triggered yesterday
 		if !alert.Active && alert.UpdatedAt.Before(today) {
 			alert.Active = true
 			alert.UpdatedAt = time.Now().UTC()
@@ -498,14 +499,29 @@ func (b *TelegramBot) checkAlert() {
 
 		var isTriggered bool
 
-		if ticker.LivePrice == alert.TargetPrice {
-			isTriggered = true
-		} else if alert.TargetPrice > alert.StartPrice && ((alert.TargetPrice < ticker.DailyHigh) || (alert.TargetPrice < ticker.LivePrice)) {
-			isTriggered = true
-		} else if alert.TargetPrice < alert.StartPrice && ((alert.TargetPrice > ticker.DailyLow) || (alert.TargetPrice > ticker.LivePrice)) {
-			isTriggered = true
+		if ticker.DailyHigh <= 0 || ticker.DailyLow <= 0 {
+			//check alert with etimated fixed amount for example (1% price)
+			estimatedAmount := 0.01 * alert.TargetPrice
+			if ticker.LivePrice == alert.TargetPrice {
+				isTriggered = true
+			} else if alert.TargetPrice > alert.StartPrice && alert.TargetPrice < (ticker.LivePrice+estimatedAmount) {
+				isTriggered = true
+			} else if alert.TargetPrice < alert.StartPrice && alert.TargetPrice > (ticker.LivePrice-estimatedAmount) {
+				isTriggered = true
+			} else {
+				isTriggered = false
+			}
 		} else {
-			isTriggered = false
+			//check akert with dailyhigh and dailylow
+			if ticker.LivePrice == alert.TargetPrice {
+				isTriggered = true
+			} else if alert.TargetPrice > alert.StartPrice && ((alert.TargetPrice < ticker.DailyHigh) || (alert.TargetPrice < ticker.LivePrice)) {
+				isTriggered = true
+			} else if alert.TargetPrice < alert.StartPrice && ((alert.TargetPrice > ticker.DailyLow) || (alert.TargetPrice > ticker.LivePrice)) {
+				isTriggered = true
+			} else {
+				isTriggered = false
+			}
 		}
 
 		if isTriggered {
@@ -514,7 +530,7 @@ func (b *TelegramBot) checkAlert() {
 			if err := b.store.UpdateAlert(&alert); err != nil {
 				log.Println("Error updating alert", err)
 			}
-			msg := tgbotapi.NewMessage(alert.UserId, fmt.Sprintf("Alert triggered for %s! Current price: %.8f TargetPrice was: %.8f, with Description: %s", alert.Symbol, ticker.LivePrice, alert.TargetPrice, alert.Description))
+			msg := tgbotapi.NewMessage(alert.UserId, fmt.Sprintf("Alert triggered for %s! Current price: %.5f TargetPrice was: %.5f, with Description: %s", alert.Symbol, ticker.LivePrice, alert.TargetPrice, alert.Description))
 			if _, err := b.bot.Send(msg); err != nil {
 				log.Printf("Error sending alert notification to user %d: %s", alert.UserId, err.Error())
 				return

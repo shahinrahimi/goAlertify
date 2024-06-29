@@ -46,37 +46,13 @@ func NewSqliteStore() (*SqliteStore, error) {
 }
 
 func (s *SqliteStore) Init() error {
-	// Create user and alert tables if they don't exist
-	createUserTable := `CREATE TABLE IF NOT EXISTS users (
-		id TEXT PRIMARY KEY,
-		user_id INTEGER NOT NULL UNIQUE,
-		username TEXT NOT NULL,
-		firstname TEXT NOT NULL,
-		lastname TEXT NOT NULL,
-		password TEXT NOT NULL,
-		created_at TIMESTAMP NOT NULL
-	);`
 
-	createAlertTable := `CREATE TABLE IF NOT EXISTS alerts (
-		id TEXT PRIMARY KEY,
-		user_id INTEGER,
-		number INTEGER,
-		symbol TEXT NOT NULL,
-		description TEXT,
-		target_price REAL,
-		start_price REAL,
-		active BOOLEAN,
-		updated_at TIMESTAMP NOT NULL,
-		created_at TIMESTAMP NOT NULL,
-		FOREIGN KEY (user_id) REFERENCES users (user_id)
-	);`
-
-	_, err := s.db.Exec(createUserTable)
+	_, err := s.db.Exec(GetCreateUsersTable())
 	if err != nil {
 		return err
 	}
 
-	_, err = s.db.Exec(createAlertTable)
+	_, err = s.db.Exec(GetCreateAlertsTable())
 	if err != nil {
 		return err
 	}
