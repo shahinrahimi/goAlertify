@@ -464,7 +464,6 @@ func (b *TelegramBot) viewSymbols(chatId, userId int64) error {
 	_, err = b.bot.Send(msg)
 	return err
 }
-
 func (b *TelegramBot) startAlertChecker() {
 	for {
 		b.checkAlert()
