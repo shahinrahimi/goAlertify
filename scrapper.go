@@ -59,12 +59,12 @@ func processForex(row *goquery.Selection) {
 		return
 	}
 
-	symbol := strings.TrimSpace(strings.Split(cells.Eq(0).Text(), " ")[0])
+	symbol := strings.TrimSpace(cells.Eq(0).Find("a").Text())
 	name := strings.TrimSpace(cells.Eq(0).Find("sup").Eq(0).Text())
 	livePriceStr := strings.TrimSpace(cells.Eq(1).Text())
 	dailyHighStr := strings.TrimSpace(cells.Eq(6).Text())
 	dailyLowStr := strings.TrimSpace(cells.Eq(7).Text())
-	processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, "Forex")
+	processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, "forex")
 }
 
 func processFeatures(row *goquery.Selection) {
@@ -79,7 +79,7 @@ func processFeatures(row *goquery.Selection) {
 	livePriceStr := strings.TrimSpace(cells.Eq(1).Text())
 	dailyHighStr := strings.TrimSpace(cells.Eq(4).Text())
 	dailyLowStr := strings.TrimSpace(cells.Eq(5).Text())
-	processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, "Features")
+	processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, "feature")
 }
 
 func processCryptos(row *goquery.Selection) {
@@ -92,7 +92,7 @@ func processCryptos(row *goquery.Selection) {
 	symbol := strings.TrimSpace(cells.Eq(0).Find("a").Eq(0).Text())
 	name := strings.TrimSpace(cells.Eq(0).Find("sup").Eq(0).Text())
 	livePriceStr := strings.TrimSpace(strings.Replace(cells.Eq(2).Text(), "USD", "", -1))
-	processPrices(symbol, name, livePriceStr, "0", "0", "Crypto")
+	processPrices(symbol, name, livePriceStr, "0", "0", "crypto")
 }
 
 func processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, category string) {
@@ -126,7 +126,7 @@ func processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, catego
 		ticker.Update(livePrice, dailyHigh, dailyLow)
 
 	} else {
-		t := NewTicker(symbol, name, category, livePrice, dailyHigh, dailyLow)
+		t := NewTicker(strings.ToLower(symbol), strings.ToLower(name), category, livePrice, dailyHigh, dailyLow)
 		tickers[symbol] = t
 		fmt.Println(t.Category, t.Symbol, t.Name, t.LivePrice, t.DailyHigh, t.DailyLow)
 	}

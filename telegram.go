@@ -134,34 +134,50 @@ func (b *TelegramBot) handleButton(query *tgbotapi.CallbackQuery) {
 }
 func (b *TelegramBot) handleCommand(chatId int64, userId int64, command, username, fisrtname, lastname string) error {
 	var err error
+	var commandParts []string
+	parts := strings.Split(command, " ")
+	for _, part := range parts {
+		commandParts = append(commandParts, strings.ToLower(strings.TrimSpace(part)))
+	}
+	var mainCommand = commandParts[0]
 
 	switch {
-	case strings.HasPrefix(command, "/start"):
+	case mainCommand == "/start":
 		err = b.registerUser(chatId, userId, username, fisrtname, lastname)
-	case strings.HasPrefix(command, "/viewuser"):
+	case mainCommand == "/viewuser":
 		err = b.viewUser(chatId, userId)
-	case strings.HasPrefix(command, "/deleteuser"):
+	case mainCommand == "/deleteuser":
 		err = b.deleteUser(chatId, userId)
-	case strings.HasPrefix(command, "/createalert"):
-		err = b.createAlert(chatId, userId, command)
-	case strings.HasPrefix(command, "/viewalerts"):
-		err = b.viewAlerts(chatId, userId, command)
-	case strings.HasPrefix(command, "/updatealert"):
-		err = b.updateAlert(chatId, userId, command)
-	case strings.HasPrefix(command, "/deletealert"):
-		err = b.deleteAlert(chatId, userId, command)
-	case strings.HasPrefix(command, "/viewsymbols"):
-		err = b.viewSymbols(chatId, userId)
+	case mainCommand == "/createalert":
+		err = b.createAlert(chatId, userId, commandParts[1:])
+	case mainCommand == "/viewalerts":
+		err = b.viewAlerts(chatId, userId, commandParts[1:])
+	case mainCommand == "/updatealert":
+		err = b.updateAlert(chatId, userId, commandParts[1:])
+	case mainCommand == "/deletealert":
+		err = b.deleteAlert(chatId, userId, commandParts[1:])
+	case mainCommand == "/viewsymbols":
+		err = b.viewSymbols(chatId, userId, commandParts[1:])
 	default:
 		// Handle unknown commands or provide instructions
-		msg := tgbotapi.NewMessage(chatId, "Unknown command. Available commands: /start, /createalert, /updatealert, /deletealert, /viewalerts, /viewsymbols")
-		_, err := b.bot.Send(msg)
-		if err != nil {
-			log.Println("Error sending message:", err)
-		}
+		return b.sendMessage(chatId, "Unknown command. Available commands: /start, /createalert, /updatealert, /deletealert, /viewalerts, /viewsymbols")
 	}
 
 	return err
+}
+
+func (b *TelegramBot) checkUser(userID, chatId int64) (*User, error) {
+	user, err := b.store.GetUserByUserId(userID)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, b.sendMessage(chatId, "You are not registered.\nUsage: /start")
+		}
+		return nil, err
+	}
+	return user, nil
 }
 
 // crud on user
@@ -171,155 +187,99 @@ func (b *TelegramBot) registerUser(chatId, userId int64, username, fisrtname, la
 		return err
 	}
 	if user != nil {
-		msg := tgbotapi.NewMessage(chatId, "You are already registered.")
-		_, err := b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "You are already registered.")
 	}
 
 	newUser, err := NewUser(userId, username, fisrtname, lastname, "default_pass")
 	if err != nil {
-		msg := tgbotapi.NewMessage(chatId, "Error creating user object.")
-		_, err := b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Error creating user object.")
 	}
 
 	if err := b.store.CreateUser(*newUser); err != nil {
-		fmt.Println(err)
-		msg := tgbotapi.NewMessage(chatId, "Error storing user to DB.")
-		_, err := b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Error storing user to DB.")
 	}
-	msg := tgbotapi.NewMessage(chatId, "You have been registered successfully.")
-	_, err = b.bot.Send(msg)
-	return err
+	return b.sendMessage(chatId, "You have been registered successfully.")
 }
 func (b *TelegramBot) viewUser(chatId, userId int64) error {
-	user, err := b.store.GetUserByUserId(userId)
+	user, err := b.checkUser(userId, chatId)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			msg := tgbotapi.NewMessage(chatId, "User not found.")
-			_, err := b.bot.Send(msg)
-			return err
-		}
 		return err
 	}
-
-	// Format user data for display
-	userData := fmt.Sprintf("User ID: %d\nChat ID: %d\nUsername: %s\nFistname: %s\nLastname: %s\nPassword: %s\nCreated At: %s",
-		user.UserId, chatId, user.Username, user.Firstname, user.Lastname, user.Password, user.CreatedAt.Format(time.RFC3339))
-
-	msg := tgbotapi.NewMessage(chatId, userData)
-	_, err = b.bot.Send(msg)
-	return err
+	return b.sendMessage(chatId, user.toTelegramString())
 }
 func (b *TelegramBot) deleteUser(chatId, userId int64) error {
-	user, err := b.store.GetUserByUserId(userId)
-	if err != nil && err != sql.ErrNoRows {
+	user, err := b.checkUser(userId, chatId)
+	if err != nil {
 		return err
 	}
-	if user == nil {
-		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
-		_, err := b.bot.Send(msg)
-		return err
+	if err := b.store.DeleteUserAndAlerts(user.UserId); err != nil {
+		return b.sendMessage(chatId, "User data can not be deleted.")
 	}
-	if err := b.store.DeleteUserAndAlerts(userId); err != nil {
-		msg := tgbotapi.NewMessage(chatId, "user data can not be deleted.")
-		_, _ = b.bot.Send(msg)
-		return err
-	}
-
-	msg := tgbotapi.NewMessage(chatId, "User and all associated alerts have been deleted successfully.")
-	_, err = b.bot.Send(msg)
-	return err
+	return b.sendMessage(chatId, "User and all associated alerts have been deleted successfully.")
 }
 
 // crud alert
-func (b *TelegramBot) createAlert(chatId, userId int64, command string) error {
-	user, err := b.store.GetUserByUserId(userId)
-	if err != nil && err != sql.ErrNoRows {
-		return err
-	}
-	if user == nil {
-		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
-		_, err := b.bot.Send(msg)
-		return err
-	}
-	// Extract alert details from the command
-	parts := strings.SplitN(command, " ", 4)
-	println(len(parts))
-	if len(parts) < 3 {
-		msg := tgbotapi.NewMessage(chatId, "Usage: /createalert <ticker> <traget_price> <description>")
-		_, err := b.bot.Send(msg)
-		return err
-	}
-	tickerSymbol := strings.ToUpper(parts[1])
-	t, exist := tickers[tickerSymbol]
-	if !exist {
-		msg := tgbotapi.NewMessage(chatId, "Symbol not found, please try later or insert valid symbol.")
-		_, err := b.bot.Send(msg)
+func (b *TelegramBot) createAlert(chatId, userId int64, command []string) error {
+	_, err := b.checkUser(userId, chatId)
+	if err != nil {
 		return err
 	}
 
-	targetPrice, err := strconv.ParseFloat(parts[2], 64)
+	// Extract alert details from the command
+	if len(command) < 2 {
+		return b.sendMessage(chatId, "Usage: /createalert <ticker> <traget_price> <description>")
+	}
+
+	tickerSymbol := command[0]
+	t, exist := tickers[tickerSymbol]
+	if !exist {
+		return b.sendMessage(chatId, "Symbol not found, please try later or insert valid symbol.")
+	}
+
+	targetPrice, err := strconv.ParseFloat(command[1], 64)
 	if err != nil {
-		msg := tgbotapi.NewMessage(chatId, "Invalid target price.")
-		_, err = b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Invalid target price.")
 	}
 
 	// check if target_price is not in the range of daily (High and Low)
 	if targetPrice < t.DailyHigh && targetPrice > t.DailyLow {
-		msg := tgbotapi.NewMessage(chatId, "Invalid target price.\ntarget_price already in range of daily hight and low.")
-		_, err = b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Invalid target price.\ntarget_price already in range of daily hight and low.")
 	}
+
 	var description string
-	if len(parts) == 4 {
-		description = parts[3]
+	if len(command) > 2 {
+		for index, c := range command {
+			if index >= 2 {
+				description = description + " " + c
+			}
+		}
 	} else {
 		description = ""
 	}
 	newAlert := NewAlert(userId, t.Symbol, description, targetPrice, t.LivePrice)
 	if err := b.store.CreateAlert(newAlert); err != nil {
-		msg := tgbotapi.NewMessage(chatId, "Error storing the alert.")
-		_, err = b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Error storing the alert.")
 	}
-
-	msg := tgbotapi.NewMessage(chatId, "Alert added successfully.")
-	_, err = b.bot.Send(msg)
-	return err
+	return b.sendMessage(chatId, "Alert added successfully.")
 }
-func (b *TelegramBot) viewAlerts(chatId, userId int64, command string) error {
-	user, err := b.store.GetUserByUserId(userId)
-	if err != nil && err != sql.ErrNoRows {
-		return err
-	}
-	if user == nil {
-		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
-		_, err := b.bot.Send(msg)
+func (b *TelegramBot) viewAlerts(chatId, userId int64, command []string) error {
+	_, err := b.checkUser(userId, chatId)
+	if err != nil {
 		return err
 	}
 	var alerts []Alert
-	parts := strings.SplitN(command, " ", 2)
-	if len(parts) == 1 {
-		// view all alerts
-		alerts, err = b.store.GetAlertsByUserId(userId)
-		log.Println(len(alerts))
-		if err != nil {
-			return err
-		}
-	} else if len(parts) == 2 {
-		// view alerts with symbol
-		symbol := parts[1]
-		alerts, err = b.store.GetAlertsByUserIdAndSymbol(userId, symbol)
+	if len(command) > 0 {
+		symbolStr := command[0]
+		alerts, err = b.store.GetAlertsByUserIdAndSymbol(userId, symbolStr)
 		if err != nil {
 			return err
 		}
 	} else {
-		msg := tgbotapi.NewMessage(chatId, "Usage: /viewalerts <symbol(optional)>")
-		_, err := b.bot.Send(msg)
-		return err
+		alerts, err = b.store.GetAlertsByUserId(userId)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	var alertStrings []string
@@ -336,57 +296,36 @@ func (b *TelegramBot) viewAlerts(chatId, userId int64, command string) error {
 	}
 
 	if len(alertStrings) == 0 {
-		msg := tgbotapi.NewMessage(chatId, "No alerts found.")
-		_, err := b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "No alerts found.")
 	}
-
-	msg := tgbotapi.NewMessage(chatId, strings.Join(alertStrings, "\n\n"))
-	_, err = b.bot.Send(msg)
-	return err
+	return b.sendMessageInChunks(chatId, strings.Join(alertStrings, "\n\n"))
 }
-func (b *TelegramBot) updateAlert(chatId, userId int64, command string) error {
-	user, err := b.store.GetUserByUserId(userId)
-	if err != nil && err != sql.ErrNoRows {
-		return err
-	}
-	if user == nil {
-		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
-		_, err := b.bot.Send(msg)
-		return err
-	}
-	// Extract alert details from the command
-	parts := strings.SplitN(command, " ", 3)
-	if len(parts) < 3 {
-		msg := tgbotapi.NewMessage(chatId, "Usage: /updatealert <number> <target_price>")
-		_, err := b.bot.Send(msg)
+func (b *TelegramBot) updateAlert(chatId, userId int64, command []string) error {
+	_, err := b.checkUser(userId, chatId)
+	if err != nil {
 		return err
 	}
 
-	number, err := strconv.ParseInt(parts[1], 10, 32)
+	if len(command) < 2 {
+		return b.sendMessage(chatId, "Usage: /updatealert <number> <target_price>")
+	}
+
+	number, err := strconv.ParseInt(command[0], 10, 32)
 	if err != nil {
-		msg := tgbotapi.NewMessage(chatId, "Invalid alert number.")
-		_, err = b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Invalid alert number.")
 	}
 	alert, err := b.store.GetAlertByNumber(userId, int32(number))
 	if err != nil {
-		msg := tgbotapi.NewMessage(chatId, "Alert not found.")
-		_, err := b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Alert not found.")
 	}
 
-	targetPrice, err := strconv.ParseFloat(parts[2], 64)
+	targetPrice, err := strconv.ParseFloat(command[1], 64)
 	if err != nil {
-		msg := tgbotapi.NewMessage(chatId, "Invalid target price.")
-		_, err = b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Invalid target price.")
 	}
 	ticker, exists := tickers[alert.Symbol]
 	if !exists {
-		msg := tgbotapi.NewMessage(chatId, "Live price not available for editing alert")
-		_, err := b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Live price not available for editing alert")
 	}
 
 	alert.StartPrice = ticker.LivePrice
@@ -394,11 +333,9 @@ func (b *TelegramBot) updateAlert(chatId, userId int64, command string) error {
 	if err := b.store.UpdateAlert(alert); err != nil {
 		return err
 	}
-	msg := tgbotapi.NewMessage(chatId, "Alert updated successfully.")
-	_, err = b.bot.Send(msg)
-	return err
+	return b.sendMessage(chatId, "Alert updated successfully.")
 }
-func (b *TelegramBot) deleteAlert(chatId, userId int64, command string) error {
+func (b *TelegramBot) deleteAlert(chatId, userId int64, command []string) error {
 	user, err := b.store.GetUserByUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -408,34 +345,24 @@ func (b *TelegramBot) deleteAlert(chatId, userId int64, command string) error {
 		_, err := b.bot.Send(msg)
 		return err
 	}
-	parts := strings.SplitN(command, " ", 2)
-	if len(parts) < 2 {
-		msg := tgbotapi.NewMessage(chatId, "Usage: /deletealert <number>")
-		_, err := b.bot.Send(msg)
-		return err
+	if len(command) < 1 {
+		return b.sendMessage(chatId, "Usage: /deletealert <number>")
 	}
 
-	number, err := strconv.ParseInt(parts[1], 10, 32)
+	number, err := strconv.ParseInt(command[0], 10, 32)
 	if err != nil {
-		msg := tgbotapi.NewMessage(chatId, "Invalid alert number.")
-		_, err = b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Invalid alert number.")
 	}
 
 	alert, err := b.store.GetAlertByNumber(userId, int32(number))
 	if err != nil {
-		msg := tgbotapi.NewMessage(chatId, "Alert not found.")
-		_, err := b.bot.Send(msg)
-		return err
+		return b.sendMessage(chatId, "Alert not found.")
 	}
 
 	if err := b.store.DeleteAlert(alert.Id); err != nil {
 		return err
 	}
-
-	msg := tgbotapi.NewMessage(chatId, "Alert deleted successfully.")
-	_, err = b.bot.Send(msg)
-	return err
+	return b.sendMessage(chatId, "Alert deleted successfully.")
 }
 
 func (b *TelegramBot) sendMessage(chatId int64, msgStr string) error {
@@ -447,38 +374,61 @@ func (b *TelegramBot) sendMessageInChunks(chatId int64, msgStr string) error {
 	const maxMessageSize = 4096
 	// Split the message into chunks
 	parts := SplitMessage(msgStr, maxMessageSize)
-
 	// Send each chunk
 	for _, part := range parts {
 		if err := b.sendMessage(chatId, part); err != nil {
 			return err
 		}
 	}
-
 	return nil
-
 }
 
-func (b *TelegramBot) viewSymbols(chatId, userId int64) error {
-	user, err := b.store.GetUserByUserId(userId)
-	if err != nil && err != sql.ErrNoRows {
+func (b *TelegramBot) viewSymbols(chatId, userId int64, command []string) error {
+	_, err := b.checkUser(chatId, userId)
+	if err != nil {
 		return err
 	}
-	if user == nil {
-		return b.sendMessage(chatId, "You are not registered.\nUsage: /start")
-	}
+
 	var tickerStrings []string
-	for _, ticker := range tickers {
-		tickerStrings = append(tickerStrings, fmt.Sprintf("Symbol: %s\n\tNow: %.4f\n\tHigh: %.4f\n\tLow: %.4f\n\n",
-			ticker.Symbol, ticker.LivePrice, ticker.DailyHigh, ticker.DailyLow))
+	if len(command) > 0 {
+		if command[0] == "cryptos" {
+			for _, ticker := range tickers {
+				if ticker.Category == "crypto" {
+					tickerStrings = append(tickerStrings, ticker.toTelegramString())
+				}
+			}
+		} else if command[0] == "feature" {
+			for _, ticker := range tickers {
+				if ticker.Category == "feature" {
+					tickerStrings = append(tickerStrings, ticker.toTelegramString())
+				}
+			}
+
+		} else if command[0] == "forex" {
+			for _, ticker := range tickers {
+				if ticker.Category == "forex" {
+					tickerStrings = append(tickerStrings, ticker.toTelegramString())
+				}
+			}
+
+		} else {
+			for _, ticker := range tickers {
+				if strings.Contains(ticker.Symbol, command[0]) || strings.Contains(ticker.Name, command[0]) {
+					tickerStrings = append(tickerStrings, ticker.toTelegramString())
+				}
+			}
+		}
+	} else {
+		for _, ticker := range tickers {
+			tickerStrings = append(tickerStrings, ticker.toTelegramString())
+		}
 	}
 
 	if len(tickerStrings) == 0 {
 		return b.sendMessage(chatId, "No tickers found.")
 	}
 
-	return b.sendMessageInChunks(chatId, strings.Join(tickerStrings, "\n\n"))
-
+	return b.sendMessageInChunks(chatId, strings.Join(tickerStrings, "\n"))
 }
 func (b *TelegramBot) startAlertChecker() {
 	for {

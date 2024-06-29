@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -34,4 +36,9 @@ func (t *Ticker) Update(livePrice, dailyHigh, dailyLow float64) error {
 	t.DailyHigh = dailyHigh
 	t.DailyLow = dailyLow
 	return nil
+}
+
+func (t *Ticker) toTelegramString() string {
+	return fmt.Sprintf("Symbol [%s]: (%0.4f)",
+		strings.ToUpper(t.Symbol), t.LivePrice)
 }

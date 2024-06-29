@@ -44,3 +44,8 @@ func NewUser(user_id int64, username, firstname, lastname, password string) (*Us
 		CreatedAt: time.Now().UTC(),
 	}, nil
 }
+
+func (u *User) toTelegramString() string {
+	return fmt.Sprintf("User ID: %d\nChat ID: %d\nUsername: %s\nFistname: %s\nLastname: %s\nPassword: %s\nCreated At: %s",
+		u.UserId, u.UserId, u.Username, u.Firstname, u.Lastname, u.Password, u.CreatedAt.Format(time.RFC3339))
+}

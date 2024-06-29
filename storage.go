@@ -190,6 +190,29 @@ func (s *SqliteStore) GetAlertsByUserIdAndSymbol(userId int64, symbol string) ([
 
 	return alerts, nil
 }
+func (s *SqliteStore) GetAlertsByUserIdAndSymbolLike(userId int64, symbol string) ([]Alert, error) {
+	query := "SELECT id, user_id, number, symbol, description, target_price, start_price, active, created_at FROM alerts WHERE user_id = ? AND symbol LIKE ? COLLATE NOCASE"
+	rows, err := s.db.Query(query, userId, "%"+symbol+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var alerts []Alert
+	for rows.Next() {
+		var alert Alert
+		err := rows.Scan(&alert.Id, &alert.UserId, &alert.Number, &alert.Symbol, &alert.Description, &alert.TargetPrice, &alert.StartPrice, &alert.Active, &alert.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		alerts = append(alerts, alert)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return alerts, nil
+}
 func (s *SqliteStore) CreateAlert(alert *Alert) error {
 	var maxNumber int32
 	err := s.db.QueryRow("SELECT IFNULL(MAX(number), 0) FROM alerts WHERE user_id = ?", alert.UserId).Scan(&maxNumber)
