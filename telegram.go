@@ -272,11 +272,13 @@ func (b *TelegramBot) createAlert(chatId, userId int64, command []string) error 
 				description = description + " " + c
 			}
 		}
+		fmt.Println(description)
 	} else {
 		description = ""
 	}
 	newAlert := NewAlert(userId, t.Symbol, description, targetPrice, t.LivePrice)
 	if err := b.store.CreateAlert(newAlert); err != nil {
+		fmt.Println(err)
 		return b.sendMessage(chatId, "Error storing the alert.")
 	}
 	return b.sendMessage(chatId, "Alert added successfully.")

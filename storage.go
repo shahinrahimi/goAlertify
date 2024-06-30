@@ -253,15 +253,15 @@ func (s *SqliteStore) CreateAlert(alert *Alert) error {
 	if err != nil {
 		return err
 	}
-	stmt, err := tx.Prepare(`INSERT INTO alerts (id, user_id, number, description, symbol, target_price, start_price, active, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`)
+	stmt, err := tx.Prepare(`INSERT INTO alerts (id, user_id, number, description, symbol, target_price, start_price, active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(alert.Id, alert.UserId, alert.Number, alert.Description, alert.Symbol, alert.TargetPrice, alert.StartPrice, alert.Active, alert.CreatedAt)
+	_, err = stmt.Exec(alert.Id, alert.UserId, alert.Number, alert.Description, alert.Symbol, alert.TargetPrice, alert.StartPrice, alert.Active, alert.CreatedAt, alert.UpdatedAt)
 	if err != nil {
 		tx.Rollback()
 		return err
