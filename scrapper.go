@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -128,6 +127,6 @@ func processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, catego
 	} else {
 		t := NewTicker(strings.ToLower(symbol), strings.ToLower(name), category, livePrice, dailyHigh, dailyLow)
 		tickers[symbol] = t
-		fmt.Println(t.Category, t.Symbol, t.Name, t.LivePrice, t.DailyHigh, t.DailyLow)
+		// fmt.Println(t.Category, t.Symbol, t.Name, t.LivePrice, t.DailyHigh, t.DailyLow)
 	}
 }

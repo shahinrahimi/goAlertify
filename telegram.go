@@ -168,9 +168,6 @@ func (b *TelegramBot) handleCommand(chatId int64, userId int64, command, usernam
 
 func (b *TelegramBot) checkUser(userID, chatId int64) (*User, error) {
 	user, err := b.store.GetUserByUserId(userID)
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, b.sendMessage(chatId, "You are not registered.\nUsage: /start")
