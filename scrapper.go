@@ -125,8 +125,9 @@ func processPrices(symbol, name, livePriceStr, dailyHighStr, dailyLowStr, catego
 		ticker.Update(livePrice, dailyHigh, dailyLow)
 
 	} else {
-		t := NewTicker(strings.ToLower(symbol), strings.ToLower(name), category, livePrice, dailyHigh, dailyLow)
-		tickers[symbol] = t
+		lowercaseSymbol := strings.ToLower(symbol)
+		t := NewTicker(lowercaseSymbol, strings.ToLower(name), category, livePrice, dailyHigh, dailyLow)
+		tickers[lowercaseSymbol] = t
 		// fmt.Println(t.Category, t.Symbol, t.Name, t.LivePrice, t.DailyHigh, t.DailyLow)
 	}
 }
