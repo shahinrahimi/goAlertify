@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -10,6 +11,7 @@ import (
 )
 
 func main() {
+	fmt.Printf("GoAlertify Version: %s\n", version)
 	if err := godotenv.Load(); err != nil {
 		log.Panic("Error loading .env file", err)
 	}

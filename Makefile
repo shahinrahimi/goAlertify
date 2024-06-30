@@ -1,5 +1,9 @@
+APP_NAME := goAlertify
+VERSION := 1.0,0
+BUILD_DIR := bin
 build:
-	@go build -o ./bin/goAlertify
+	@mkdir -p $(BUILD_DIR)
+	@go build -ldflags="-X 'main.version=$(VERSION)'"  -o $(BUILD_DIR)/$(APP_NAME)
 
 run: build
-	@./bin/goAlertify
+	@./$(BUILD_DIR)/$(APP_NAME)
