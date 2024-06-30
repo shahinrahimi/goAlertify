@@ -458,22 +458,25 @@ func (b *TelegramBot) checkAlert() {
 		return
 	}
 
-	today := time.Now().Truncate(24 * time.Hour)
+	//today := time.Now().Truncate(24 * time.Hour)
 
 	for _, alert := range alerts {
 		// reseting alarms if triggered yesterday
-		if !alert.Active && alert.UpdatedAt.Before(today) {
-			alert.Active = true
-			alert.UpdatedAt = time.Now().UTC()
-			if err := b.store.UpdateAlert(&alert); err != nil {
-				log.Println("Error updating alert", err)
-			}
+		// if !alert.Active && alert.UpdatedAt.Before(today) {
+		// 	alert.Active = true
+		// 	alert.UpdatedAt = time.Now().UTC()
+		// 	if err := b.store.UpdateAlert(&alert); err != nil {
+		// 		log.Println("Error updating alert", err)
+		// 	}
+		// 	continue
+		// }
+		if !alert.Active {
 			continue
 		}
 		ticker, exist := tickers[alert.Symbol]
 		if !exist {
 			log.Println("Symbol not found:", alert.Symbol, "id:", alert.Id)
-			msg := tgbotapi.NewMessage(alert.UserId, "Symbol not found:"+alert.Symbol)
+			msg := tgbotapi.NewMessage(alert.UserId, "Symbol not found: "+alert.Symbol)
 			_, err = b.bot.Send(msg)
 			continue
 		}
