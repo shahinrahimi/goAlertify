@@ -204,6 +204,7 @@ func (b *TelegramBot) viewUser(chatId, userId int64) error {
 	}
 	return b.sendMessage(chatId, user.toTelegramString())
 }
+
 func (b *TelegramBot) deleteUser(chatId, userId int64) error {
 	user, err := b.checkUser(userId, chatId)
 	if err != nil {

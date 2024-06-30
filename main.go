@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/joho/godotenv"
@@ -15,17 +16,27 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Panic("Error loading .env file", err)
 	}
-	store, err := NewSqliteStore()
-	if err != nil {
-		log.Panic("Database not found", err)
-	}
-	if err := store.Init(); err != nil {
-		log.Panic("Database does not initialized", err)
-	}
-
 	apiKey := os.Getenv("TELEGRAM_BOT_API_KEY")
 	if apiKey == "" {
-		log.Panic("Telegram bot apiKey not found")
+		log.Panic("Telegram bot apiKey not found.")
+	}
+	adminUserIdStr := os.Getenv("ADMIN_USER_ID")
+	if adminUserIdStr == "" {
+		log.Panic("Admin userId not found.")
+	}
+	adminUserId, err := strconv.ParseInt(adminUserIdStr, 10, 64)
+	if err != nil {
+		log.Panic("Invalid admin userId.", err)
+	}
+	store, err := NewSqliteStore()
+	if err != nil {
+		log.Panic("Database not found.", err)
+	}
+	if err := store.Init(); err != nil {
+		log.Panic("Database does not initialized.", err)
+	}
+	if err := store.StablishAdmin(adminUserId); err != nil {
+		log.Panic("Could not stablish admin user.")
 	}
 
 	bot, err := NewTelegramBot(store, apiKey)

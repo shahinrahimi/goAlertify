@@ -46,14 +46,42 @@ func NewSqliteStore() (*SqliteStore, error) {
 }
 
 func (s *SqliteStore) Init() error {
-
+	// create table for users
 	_, err := s.db.Exec(GetCreateUsersTable())
 	if err != nil {
 		return err
 	}
 
+	// create table for alerts
 	_, err = s.db.Exec(GetCreateAlertsTable())
 	if err != nil {
+		return err
+	}
+
+	// create admin for users
+	return nil
+}
+
+func (s *SqliteStore) StablishAdmin(userId int64) error {
+	user, err := s.GetUserByUserId(userId)
+	if user != nil {
+		if user.IsAdmin == false {
+			user.IsAdmin = true
+			if err := s.UpdateUser(user.Id, *user); err != nil {
+				return err
+			}
+			return nil
+		} else {
+			return nil
+		}
+	}
+
+	// create admin user
+	admin, err := NewAdmin(userId, "default_admin_password")
+	if err != nil {
+		return err
+	}
+	if err := s.CreateUser(*admin); err != nil {
 		return err
 	}
 	return nil
@@ -61,23 +89,23 @@ func (s *SqliteStore) Init() error {
 
 // users crud
 func (s *SqliteStore) GetUser(id string) (*User, error) {
-	row := s.db.QueryRow(`SELECT id, user_id, username, firstname, lastname ,created_at FROM users WHERE id = ?`, id)
+	row := s.db.QueryRow(`SELECT id, user_id, username, firstname, lastname, created_at, is_admin FROM users WHERE id = ?`, id)
 	var user User
-	if err := row.Scan(&user.Id, &user.UserId, &user.Username, &user.Firstname, &user.Lastname, &user.CreatedAt); err != nil {
+	if err := row.Scan(&user.Id, &user.UserId, &user.Username, &user.Firstname, &user.Lastname, &user.CreatedAt, &user.IsAdmin); err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 func (s *SqliteStore) GetUserByUserId(userId int64) (*User, error) {
-	row := s.db.QueryRow(`SELECT id, user_id, username, firstname, lastname, password, created_at FROM users WHERE user_id = ?`, userId)
+	row := s.db.QueryRow(`SELECT id, user_id, username, firstname, lastname, password, created_at, is_admin FROM users WHERE user_id = ?`, userId)
 	var user User
-	if err := row.Scan(&user.Id, &user.UserId, &user.Username, &user.Firstname, &user.Lastname, &user.Password, &user.CreatedAt); err != nil {
+	if err := row.Scan(&user.Id, &user.UserId, &user.Username, &user.Firstname, &user.Lastname, &user.Password, &user.CreatedAt, &user.IsAdmin); err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 func (s *SqliteStore) GetUsers() ([]User, error) {
-	rows, err := s.db.Query(`SELECT id, user_id, username, firstname, lastname ,created_at FROM users`)
+	rows, err := s.db.Query(`SELECT id, user_id, username, firstname, lastname ,created_at, is_admin FROM users`)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +114,7 @@ func (s *SqliteStore) GetUsers() ([]User, error) {
 	var users []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.Id, &u.UserId, &u.Username, &u.Firstname, &u.Lastname, &u.CreatedAt); err != nil {
+		if err := rows.Scan(&u.Id, &u.UserId, &u.Username, &u.Firstname, &u.Lastname, &u.CreatedAt, &u.IsAdmin); err != nil {
 			return nil, err
 		}
 		users = append(users, u)
@@ -95,11 +123,11 @@ func (s *SqliteStore) GetUsers() ([]User, error) {
 	return users, nil
 }
 func (s *SqliteStore) CreateUser(user User) error {
-	_, err := s.db.Exec(`INSERT INTO users (id, user_id, username, firstname, lastname ,password, created_at) VALUES (?,?,?,?,?,?,?)`, user.Id, user.UserId, user.Username, user.Firstname, user.Lastname, user.Password, user.CreatedAt)
+	_, err := s.db.Exec(`INSERT INTO users (id, user_id, username, firstname, lastname ,password, created_at, is_admin) VALUES (?,?,?,?,?,?,?,?)`, user.Id, user.UserId, user.Username, user.Firstname, user.Lastname, user.Password, user.CreatedAt, user.IsAdmin)
 	return err
 }
 func (s *SqliteStore) UpdateUser(id string, user User) error {
-	_, err := s.db.Exec(`UPDATE users SET user_id = ?, username = ?, firstname = ?, lastname = ?, password = ?, cretated_at = ? WHERE id = ?`, user.UserId, user.Username, user.Firstname, user.Lastname, user.Password, user.CreatedAt, id)
+	_, err := s.db.Exec(`UPDATE users SET user_id = ?, username = ?, firstname = ?, lastname = ?, password = ?, cretated_at = ?, is_admin = ? WHERE id = ?`, user.UserId, user.Username, user.Firstname, user.Lastname, user.Password, user.CreatedAt, user.IsAdmin, id)
 	return err
 }
 func (s *SqliteStore) DeleteUser(id string) error {

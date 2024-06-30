@@ -15,6 +15,7 @@ type User struct {
 	Lastname  string    `json:"lastname"`
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"created_at"`
+	IsAdmin   bool      `json:"is_admin"`
 }
 
 func GetCreateUsersTable() string {
@@ -25,7 +26,8 @@ func GetCreateUsersTable() string {
 		firstname TEXT NOT NULL,
 		lastname TEXT NOT NULL,
 		password TEXT NOT NULL,
-		created_at TIMESTAMP NOT NULL
+		created_at TIMESTAMP NOT NULL,
+		is_admin BOOLEAN
 	);`
 }
 
@@ -42,6 +44,24 @@ func NewUser(user_id int64, username, firstname, lastname, password string) (*Us
 		Lastname:  lastname,
 		Password:  hashedPassword,
 		CreatedAt: time.Now().UTC(),
+		IsAdmin:   false,
+	}, nil
+}
+
+func NewAdmin(user_id int64, password string) (*User, error) {
+	hashedPassword, err := HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
+	return &User{
+		Id:        fmt.Sprint("AD99999999999"),
+		UserId:    user_id,
+		Username:  "admin",
+		Firstname: "admin",
+		Lastname:  "admin",
+		Password:  hashedPassword,
+		CreatedAt: time.Now().UTC(),
+		IsAdmin:   false,
 	}, nil
 }
 
