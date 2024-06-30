@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -75,6 +76,6 @@ func (a *Alert) ToString(livePrice float64) string {
 	} else {
 		diffTargetPriceIcon = "\U0001F539"
 	}
-	return fmt.Sprintf("#%d (Active: %s) %s\n%s (%.5f) [%s %.5f]\n%.5f => %.5f [%s %.5f]",
-		a.Number, activeIcon, a.Description, a.Symbol, a.TargetPrice, diffTargetPriceIcon, math.Abs(diffTargetPrice), a.StartPrice, livePrice, diffStartPriceIcon, diffStartPrice)
+	return fmt.Sprintf("#%d [%s] %s %s\n(%.5f) => [%s %.5f]\n(%.5f) => [%s %.5f]",
+		a.Number, strings.ToUpper(a.Symbol), activeIcon, a.Description, a.TargetPrice, diffTargetPriceIcon, math.Abs(diffTargetPrice), livePrice, diffStartPriceIcon, diffStartPrice)
 }
