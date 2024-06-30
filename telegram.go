@@ -146,6 +146,8 @@ func (b *TelegramBot) handleCommand(chatId int64, userId int64, command, usernam
 		err = b.registerUser(chatId, userId, username, fisrtname, lastname)
 	case mainCommand == "/viewuser":
 		err = b.viewUser(chatId, userId)
+	case mainCommand == "/viewusers":
+		err = b.viewUsers(chatId, userId)
 	case mainCommand == "/deleteuser":
 		err = b.deleteUser(chatId, userId)
 	case mainCommand == "/createalert":
@@ -203,6 +205,25 @@ func (b *TelegramBot) viewUser(chatId, userId int64) error {
 		return err
 	}
 	return b.sendMessage(chatId, user.toTelegramString())
+}
+func (b *TelegramBot) viewUsers(chatId, userId int64) error {
+	user, err := b.checkUser(userId, chatId)
+	if user == nil {
+		return err
+	}
+	if !user.IsAdmin {
+		return b.sendMessage(chatId, "Permission denied!")
+	}
+	users, err := b.store.GetUsers()
+	if err != nil {
+		return err
+	}
+	var usersStrings []string
+	for _, u := range users {
+		usersStrings = append(usersStrings, u.toTelegramString())
+	}
+
+	return b.sendMessageInChunks(chatId, strings.Join(usersStrings, "\n\n"))
 }
 
 func (b *TelegramBot) deleteUser(chatId, userId int64) error {

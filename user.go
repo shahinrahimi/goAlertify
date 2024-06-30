@@ -61,7 +61,7 @@ func NewAdmin(user_id int64, password string) (*User, error) {
 		Lastname:  "admin",
 		Password:  hashedPassword,
 		CreatedAt: time.Now().UTC(),
-		IsAdmin:   false,
+		IsAdmin:   true,
 	}, nil
 }
 
