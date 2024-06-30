@@ -1,5 +1,5 @@
 APP_NAME := goAlertify
-VERSION := 1.0,0
+VERSION := 1.0,1
 BUILD_DIR := bin
 build:
 	@mkdir -p $(BUILD_DIR)

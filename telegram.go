@@ -199,7 +199,7 @@ func (b *TelegramBot) registerUser(chatId, userId int64, username, fisrtname, la
 }
 func (b *TelegramBot) viewUser(chatId, userId int64) error {
 	user, err := b.checkUser(userId, chatId)
-	if err != nil {
+	if user == nil {
 		return err
 	}
 	return b.sendMessage(chatId, user.toTelegramString())
@@ -217,8 +217,8 @@ func (b *TelegramBot) deleteUser(chatId, userId int64) error {
 
 // crud alert
 func (b *TelegramBot) createAlert(chatId, userId int64, command []string) error {
-	_, err := b.checkUser(userId, chatId)
-	if err != nil {
+	user, err := b.checkUser(userId, chatId)
+	if user == nil {
 		return err
 	}
 
@@ -260,8 +260,8 @@ func (b *TelegramBot) createAlert(chatId, userId int64, command []string) error 
 	return b.sendMessage(chatId, "Alert added successfully.")
 }
 func (b *TelegramBot) viewAlerts(chatId, userId int64, command []string) error {
-	_, err := b.checkUser(userId, chatId)
-	if err != nil {
+	user, err := b.checkUser(userId, chatId)
+	if user == nil {
 		return err
 	}
 	var alerts []Alert
@@ -298,8 +298,8 @@ func (b *TelegramBot) viewAlerts(chatId, userId int64, command []string) error {
 	return b.sendMessageInChunks(chatId, strings.Join(alertStrings, "\n\n"))
 }
 func (b *TelegramBot) updateAlert(chatId, userId int64, command []string) error {
-	_, err := b.checkUser(userId, chatId)
-	if err != nil {
+	user, err := b.checkUser(userId, chatId)
+	if user == nil {
 		return err
 	}
 
@@ -333,15 +333,11 @@ func (b *TelegramBot) updateAlert(chatId, userId int64, command []string) error 
 	return b.sendMessage(chatId, "Alert updated successfully.")
 }
 func (b *TelegramBot) deleteAlert(chatId, userId int64, command []string) error {
-	user, err := b.store.GetUserByUserId(userId)
-	if err != nil && err != sql.ErrNoRows {
-		return err
-	}
+	user, err := b.checkUser(userId, chatId)
 	if user == nil {
-		msg := tgbotapi.NewMessage(chatId, "You are not registered.\nUsage: /start")
-		_, err := b.bot.Send(msg)
 		return err
 	}
+
 	if len(command) < 1 {
 		return b.sendMessage(chatId, "Usage: /deletealert <number>")
 	}
@@ -381,8 +377,8 @@ func (b *TelegramBot) sendMessageInChunks(chatId int64, msgStr string) error {
 }
 
 func (b *TelegramBot) viewSymbols(chatId, userId int64, command []string) error {
-	_, err := b.checkUser(chatId, userId)
-	if err != nil {
+	user, err := b.checkUser(userId, chatId)
+	if user == nil {
 		return err
 	}
 
